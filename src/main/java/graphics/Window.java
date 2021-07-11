@@ -3,8 +3,8 @@ package graphics;
 
 import event.EventData;
 import event.Events;
-import input.Keyboard;
-import input.Mouse;
+import input_old.Keyboard_old;
+import input_old.Mouse;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import postprocess.PostProcessing;
@@ -107,7 +107,7 @@ public class Window {
         });
 
         Mouse.setupCallbacks();
-        Keyboard.setupCallbacks();
+        Keyboard_old.setupCallbacks();
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(glfwWindow);
@@ -161,7 +161,7 @@ public class Window {
             frameBeginTime = frameEndTime;
 
             Mouse.update();
-            Keyboard.update();
+            Keyboard_old.update();
             // poll GLFW for input events
             glfwPollEvents();
 

@@ -7,7 +7,7 @@ import graphics.renderer.DebugRenderer;
 import graphics.renderer.DefaultRenderer;
 import graphics.renderer.LightmapRenderer;
 import graphics.renderer.Renderer;
-import input.Keyboard;
+import input_old.Keyboard_old;
 import org.lwjgl.glfw.GLFW;
 import postprocess.ForwardToTexture;
 import postprocess.PostProcessStep;
@@ -70,7 +70,7 @@ public abstract class Scene {
      * This method is called every frame, and can be used to update objects.
      */
     public void update() {
-        if (Keyboard.getKeyDown(GLFW.GLFW_KEY_GRAVE_ACCENT)) {
+        if (Keyboard_old.getKeyDown(GLFW.GLFW_KEY_GRAVE_ACCENT)) {
             debugMode = !debugMode;
         }
     }

@@ -1,6 +1,6 @@
 package ecs;
 
-import input.Keyboard;
+import input_old.Keyboard_old;
 import org.joml.Vector2f;
 import physics.AABB;
 import util.Engine;
@@ -37,7 +37,7 @@ public class CharacterControllerGravity extends CharacterController {
     @Override
     protected void moveY () {
         lastPosition.y = gameObject.getTransform().getY();
-        if ((Keyboard.getKey(Keyboard.W_KEY)) && grounded) {
+        if ((Keyboard_old.getKey(Keyboard_old.W_KEY)) && grounded) {
             gameObject.getTransform().addY(-1);
             velocity.y = -560;
             grounded = false;

@@ -1,4 +1,4 @@
-package input;
+package input_old;
 
 public class Buttons {
 	/** Mouse buttons. See <a target="_blank" href="http://www.glfw.org/docs/latest/input.html#input_mouse_button">mouse button input</a> for how these are used. */

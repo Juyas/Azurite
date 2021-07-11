@@ -1,6 +1,6 @@
 package ecs;
 
-import input.Keyboard;
+import input_old.Keyboard_old;
 import org.joml.Vector2f;
 import physics.AABB;
 import util.Engine;
@@ -43,10 +43,10 @@ public class CharacterController extends Component {
 	protected void moveX() {
 		// X
 		gameObject.setTransformX(position.x);
-		if (Keyboard.getKey(Keyboard.A_KEY) || Keyboard.getKey(Keyboard.LEFT_ARROW)) {
+		if (Keyboard_old.getKey(Keyboard_old.A_KEY) || Keyboard_old.getKey(Keyboard_old.LEFT_ARROW)) {
 			position.x += (-speed.x + sprintSpeed) * Engine.deltaTime();
 		}
-		if (Keyboard.getKey(Keyboard.D_KEY) || Keyboard.getKey(Keyboard.RIGHT_ARROW)) {
+		if (Keyboard_old.getKey(Keyboard_old.D_KEY) || Keyboard_old.getKey(Keyboard_old.RIGHT_ARROW)) {
 			position.x += (speed.x + sprintSpeed) * Engine.deltaTime();
 		}
 	}
@@ -55,10 +55,10 @@ public class CharacterController extends Component {
 		// Y
 		gameObject.setTransformY(position.y);
 
-		if (Keyboard.getKey(Keyboard.W_KEY) || Keyboard.getKey(Keyboard.UP_ARROW)) {
+		if (Keyboard_old.getKey(Keyboard_old.W_KEY) || Keyboard_old.getKey(Keyboard_old.UP_ARROW)) {
 			position.y += (-speed.y + sprintSpeed) * Engine.deltaTime();
 		}
-		if (Keyboard.getKey(Keyboard.S_KEY) || Keyboard.getKey(Keyboard.DOWN_ARROW)) {
+		if (Keyboard_old.getKey(Keyboard_old.S_KEY) || Keyboard_old.getKey(Keyboard_old.DOWN_ARROW)) {
 			position.y += (speed.y + sprintSpeed) * Engine.deltaTime();
 		}
 	}

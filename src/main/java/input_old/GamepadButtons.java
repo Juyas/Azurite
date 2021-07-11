@@ -1,4 +1,4 @@
-package input;
+package input_old;
 
 public class GamepadButtons {
 	/** Gamepad buttons. See <a target="_blank" href="http://www.glfw.org/docs/latest/input.html#gamepad">gamepad</a> for how these are used. */
