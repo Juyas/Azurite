@@ -3,8 +3,9 @@ package graphics;
 
 import event.EventData;
 import event.Events;
+import input.Keyboard;
 import input_old.Keyboard_old;
-import input_old.Mouse;
+import input_old.Mouse_old;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import postprocess.PostProcessing;
@@ -106,8 +107,8 @@ public class Window {
             Events.windowResizeEvent.onEvent(new EventData.WindowResizeEventData(newWidth, newHeight));
         });
 
-        Mouse.setupCallbacks();
-        Keyboard_old.setupCallbacks();
+        Mouse_old.setupCallbacks();
+        Keyboard.setupCallbacks();
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(glfwWindow);
@@ -160,7 +161,7 @@ public class Window {
             Engine.updateDeltaTime((float) (frameEndTime - frameBeginTime));
             frameBeginTime = frameEndTime;
 
-            Mouse.update();
+            Mouse_old.update();
             Keyboard_old.update();
             // poll GLFW for input events
             glfwPollEvents();

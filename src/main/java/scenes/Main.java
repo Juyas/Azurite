@@ -12,7 +12,7 @@ import ecs.GameObject;
 import ecs.PointLight;
 import graphics.Camera;
 import graphics.Color;
-import input_old.Mouse;
+import input_old.Mouse_old;
 import org.joml.Vector2f;
 import scene.Scene;
 import util.Engine;
@@ -41,7 +41,7 @@ public class Main extends Scene {
 	}
 
 	public void update() {
-		light1.getTransform().setPosition(new Vector2f(Mouse.mouseX, Mouse.mouseY));
+		light1.getTransform().setPosition(new Vector2f(Mouse_old.mouseX, Mouse_old.mouseY));
 	}
 
 }
