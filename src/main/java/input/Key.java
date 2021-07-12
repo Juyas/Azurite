@@ -1,6 +1,8 @@
 package input;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <h1>Azurite</h1>
@@ -108,7 +110,7 @@ public enum Key {
     KEY_PRTSC_SYSRQ(0xE0, 0x2A, 0x37, 0x54),
     KEY_PAUSE_BREAK(0xE1, 0x1D, 0x45, 0xE1, 0x9D, 0xC5, 0x46, 0xC6);
 
-    public static final KeyMapping<Integer, Key> RAW_KEYMAPPING;
+    public static final Map<Integer, Key> RAW_KEYMAPPING;
 
     static {
         HashMap<Integer, Key> map = new HashMap<>();
@@ -116,7 +118,7 @@ public enum Key {
             for (int scan : k.scancode())
                 map.putIfAbsent(scan, k);
         }
-        RAW_KEYMAPPING = new KeyMapping<>(map);
+        RAW_KEYMAPPING = Collections.unmodifiableMap(map);
     }
 
     private final int[] scancode;

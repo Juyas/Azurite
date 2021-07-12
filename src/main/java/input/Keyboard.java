@@ -33,8 +33,6 @@ public class Keyboard {
             return;
         }
         keyStates[scancode] = (byte) (InputMod.option(mods) | InputState.option(action));
-        if (is(scancode, InputState.PRESSED))
-            System.out.println(scancode + " / " + action + " / " + mods);
     }
 
     public static boolean is(int scanCode, Option... options) {
