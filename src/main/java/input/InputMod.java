@@ -20,7 +20,8 @@ public enum InputMod implements Option
     CONTROL( GLFW_MOD_CONTROL, (byte) 8 ),
     SHIFT( GLFW_MOD_SHIFT, (byte) 16 ),
     ALT( GLFW_MOD_ALT, (byte) 32 ),
-    COMMAND( GLFW_MOD_SUPER, (byte) 64 );
+    COMMAND( GLFW_MOD_SUPER, (byte) 64 ),
+    CAPITAL( GLFW_MOD_CAPS_LOCK, (byte) 128 );
 
     private static final HashMap<Integer, InputMod> glfwCodes;
 

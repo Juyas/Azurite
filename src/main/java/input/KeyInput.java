@@ -16,4 +16,28 @@ public class KeyInput {
     private String name;
     private HashMap<Byte, String> resultMap;
 
+    public String getName() {
+        return name;
+    }
+
+    public HashMap<Byte, String> getResultMap() {
+        return resultMap;
+    }
+
+    public int getScancode() {
+        return scancode;
+    }
+
+    public String getVirtual_key() {
+        return virtual_key;
+    }
+
+    public String process(InputMod... mods) {
+        byte mod = 0;
+        for (InputMod inputMod : mods) {
+            mod = (byte) (mod | inputMod.getMask());
+        }
+        return resultMap.get(mod);
+    }
+
 }
