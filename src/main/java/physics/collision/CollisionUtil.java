@@ -423,6 +423,11 @@ public class CollisionUtil {
         return centroid;
     }
 
+    //should be like the amount of pixels per triangle, increase precision as you zoom in though
+    //this value should be increased, if the precision is unnecessary high at approximationPrecision=0.01
+    //and descreased, if it is to low at approximationPrecision=1
+    private static final float LIGHTCAST_PIXEL_PRECISION = 3;
+
     private static List<Vector2f> lightcastForCircle(Circle shape, Point lightsource, float approximationPrecision) {
         Vector2f lineToCenter = shape.centroid().sub(lightsource.centroid(), new Vector2f());
         Vector2f lineToLight = lineToCenter.negate(new Vector2f());
@@ -434,9 +439,27 @@ public class CollisionUtil {
         Vector2f rotatedVector = new Vector2f(lineToLight.x * cos - lineToLight.y * sin, lineToLight.y * cos + lineToLight.x * sin);
         //normalize to radius, so that the vector points to a point on the edge of the circle
         rotatedVector.normalize(shape.getRadius());
-        //TODO continue calculating the light cone
+        Vector2f oppositeVector = rotatedVector.negate(new Vector2f());
+        //if there is no precision requested, just return the cone
+        if (approximationPrecision <= 0)
+            return Arrays.asList(lightsource.centroid(), rotatedVector.add(shape.centroid()), oppositeVector.add(shape.centroid()));
+        //limit precision
         if (approximationPrecision > 1) approximationPrecision = 1;
-        return null;
+        //calculate a useful precision relative to the radius and the LIGHTCAST_PIXEL_PRECISION constant
+        float maxIteration = shape.getRadius() / LIGHTCAST_PIXEL_PRECISION;
+        //kinda pseudo qualified guess, based on the object size and the given precision value
+        int depth = Math.round(Utils.map(approximationPrecision, 0, 1, 1, maxIteration));
+        //create point list with both edge points and the point closest to the light
+        List<Vector2f> points = new ArrayList<>((int) Math.pow(2, depth));
+        points.add(rotatedVector.add(shape.centroid()));
+        points.add(shape.supportPoint(lineToLight));
+        points.add(oppositeVector.add(shape.centroid()));
+        for (int i = 0; i < depth; i++) {
+            for (int coord = points.size() - 2; coord >= 0; coord--) {
+                //TODO find support points in the middle between two known points to increase precision per depth round
+            }
+        }
+        return points;
     }
 
     public static List<Vector2f> lightcast(PrimitiveShape shape, Point lightsource, float approximationPrecision) {
