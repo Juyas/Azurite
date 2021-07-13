@@ -3,8 +3,7 @@ package physics.collision;
 import org.joml.Matrix3x2f;
 import org.joml.Vector2f;
 import physics.Transform;
-import physics.collision.shape.PrimitiveShape;
-import physics.collision.shape.ShapeType;
+import physics.collision.shape.*;
 import util.Pair;
 import util.Triple;
 import util.Tuple;
@@ -232,6 +231,29 @@ public class CollisionUtil {
     }
 
     /**
+     * Finds the point with the highest dot product in a shape to a given direction d,
+     * by doing a simple max search over all dot products dot(a,d) where a element of A.
+     * Can be used as support function for all convex polygons defined by a finite number of points.
+     *
+     * @param convexShapePoints all points on the convex shape
+     * @param direction         the direction/reach to look for a point
+     * @return the index of the point with the highest dot product by the given direction, or -1 otherwise
+     */
+    public static int maxDotPointIndex(Vector2f[] convexShapePoints, Vector2f direction) {
+        float maxDot = Float.NEGATIVE_INFINITY;
+        int point = -1;
+        for (int i = 0, convexShapePointsLength = convexShapePoints.length; i < convexShapePointsLength; i++) {
+            Vector2f p = convexShapePoints[i];
+            float dot = direction.dot(p);
+            if (dot > maxDot) {
+                maxDot = dot;
+                point = i;
+            }
+        }
+        return point;
+    }
+
+    /**
      * Calculates the convex hull of a given set of points using Jarvis March.
      * The result will have the same length as the input, but not all of them have to be filled in depending on the input.
      * If the input set is just a set of points already defining a convex polygon, the points are just sorted.
@@ -399,6 +421,80 @@ public class CollisionUtil {
         centroid.x /= (6.0 * signedArea);
         centroid.y /= (6.0 * signedArea);
         return centroid;
+    }
+
+    private static List<Vector2f> lightcastForCircle(Circle shape, Point lightsource, float approximationPrecision) {
+        Vector2f lineToCenter = shape.centroid().sub(lightsource.centroid(), new Vector2f());
+        Vector2f lineToLight = lineToCenter.negate(new Vector2f());
+        float hypoSquared = lineToCenter.lengthSquared();
+        float ankaSquared = shape.getRadiusSquared();
+        float cos = ankaSquared / hypoSquared;
+        double radiant = Math.acos(cos);
+        float sin = (float) Math.sin(radiant);
+        Vector2f rotatedVector = new Vector2f(lineToLight.x * cos - lineToLight.y * sin, lineToLight.y * cos + lineToLight.x * sin);
+        //normalize to radius, so that the vector points to a point on the edge of the circle
+        rotatedVector.normalize(shape.getRadius());
+        //TODO continue calculating the light cone
+        if (approximationPrecision > 1) approximationPrecision = 1;
+        return null;
+    }
+
+    public static List<Vector2f> lightcast(PrimitiveShape shape, Point lightsource, float approximationPrecision) {
+        if (shape.type() == ShapeType.CIRCLE)
+            return lightcastForCircle((Circle) shape, lightsource, approximationPrecision);
+        List<Vector2f> fan = new ArrayList<>(shape.vertices());
+        //lightsource first
+        Vector2f lightSourcePoint = lightsource.centroid();
+        fan.add(lightSourcePoint);
+        //now every vertex in order, that is reachable by the lightray
+        //to achieve that, check all face normals and choose all faces,
+        //which normals have less than 90 degree angle to the lightray
+
+        //keep vertices range in mind
+        int start, end;
+
+        //closest point towards the light
+        int closestPoint = maxDotPointIndex(shape.getAbsolutePoints(), shape.centroid().sub(lightSourcePoint, new Vector2f()));
+        start = closestPoint;
+        end = closestPoint;
+        boolean endFound = false, startFound = false;
+        while (!endFound || !startFound) {
+            if (!endFound) {
+                Face face = shape.faces()[end];
+                //make a line from the fix point of the edge starting at
+                Vector2f lineToNextPoint = lightSourcePoint.sub(face.getAbsoluteFixPoint(), new Vector2f());
+                //if the face cannot be hit be the light of the source, the end is found
+                if (face.getOuterNormal().dot(lineToNextPoint) <= 0)
+                    endFound = true;
+                else {
+                    //increment, to look further for the end
+                    end = (end + 1) % shape.vertices();
+                }
+            }
+            if (startFound) continue;
+            //same stuff, just with the start now
+            //take face ending at the current starting point
+            Face face = shape.faces()[(start - 1) % shape.vertices()];
+            //make a line from the fix point of the edge starting at
+            Vector2f lineToNextPoint = lightSourcePoint.sub(face.getAbsoluteFixPoint(), new Vector2f());
+            //if the face cannot be hit be the light of the source, the start is found
+            if (face.getOuterNormal().dot(lineToNextPoint) <= 0)
+                startFound = true;
+            else {
+                //decrement, to look further for the start
+                start = (start - 1) % shape.vertices();
+            }
+        }
+
+        //add all points from start to end inclusive to the fan
+        int curr = start;
+        fan.add(shape.getAbsolutePoints()[start]);
+        while (curr != end) {
+            curr = (curr + 1) % shape.vertices();
+            fan.add(shape.getAbsolutePoints()[curr]);
+        }
+
+        return fan;
     }
 
     /**

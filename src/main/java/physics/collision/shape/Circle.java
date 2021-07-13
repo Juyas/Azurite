@@ -37,6 +37,20 @@ public class Circle extends PrimitiveShape {
     }
 
     /**
+     * @see #radius
+     */
+    public float getRadius() {
+        return radius;
+    }
+
+    /**
+     * @see #radiusSquared
+     */
+    public float getRadiusSquared() {
+        return radiusSquared;
+    }
+
+    /**
      * Check intersection between two circles efficiently without using square roots.
      * Will only produce wrong results originated in missing precision in floating point numbers.
      *
