@@ -426,7 +426,7 @@ public class CollisionUtil {
     //should be like the amount of pixels per triangle, increase precision as you zoom in though
     //this value should be increased, if the precision is unnecessary high at approximationPrecision=0.01
     //and descreased, if it is to low at approximationPrecision=1
-    private static final float LIGHTCAST_PIXEL_PRECISION = 3;
+    private static final float LIGHTCAST_PIXEL_PRECISION = 2;
 
     private static List<Vector2f> lightcastForCircle(Circle shape, Point lightsource, float approximationPrecision) {
         Vector2f lineToCenter = shape.centroid().sub(lightsource.centroid(), new Vector2f());
@@ -458,12 +458,21 @@ public class CollisionUtil {
         for (int i = 0; i < fractions; i++) {
             //TODO check this
             float mappedAngle = Utils.map(i, 0, fractions, (float) radiant, (float) -radiant);
-            points.add(vectorAngle(lineToLight, (float) Math.cos(mappedAngle), (float) Math.sin(mappedAngle)));
+            points.add(vectorAngle(lineToLight, (float) Math.cos(mappedAngle), (float) Math.sin(mappedAngle)).normalize(shape.getRadius()));
         }
-        points.add(half, shape.supportPoint(lineToLight));
+        //points.add(half, shape.supportPoint(lineToLight));
         points.add(0, rotatedVector.add(shape.centroid()));
         points.add(oppositeVector.add(shape.centroid()));
         return points;
+    }
+
+    public static void main(String[] args) {
+        Circle circle = Shapes.circle(new Vector2f(0, 0), 5);
+        circle.setPosition(new Vector2f(0, 0));
+        Point lightsource = new Point(new Vector2f(0, 0));
+        lightsource.setPosition(new Vector2f(-8, 0));
+        List<Vector2f> lightcast = lightcast(circle, lightsource, 1f);
+        System.out.println(Arrays.toString(lightcast.toArray()));
     }
 
     private static Vector2f vectorAngle(Vector2f vector, float cos, float sin) {
@@ -485,7 +494,7 @@ public class CollisionUtil {
         int start, end;
 
         //closest point towards the light
-        int closestPoint = maxDotPointIndex(shape.getAbsolutePoints(), shape.centroid().sub(lightSourcePoint, new Vector2f()));
+        int closestPoint = maxDotPointIndex(shape.getAbsolutePoints(), lightSourcePoint.sub(shape.centroid(), new Vector2f()));
         start = closestPoint;
         end = closestPoint;
         boolean endFound = false, startFound = false;
@@ -505,7 +514,9 @@ public class CollisionUtil {
             if (startFound) continue;
             //same stuff, just with the start now
             //take face ending at the current starting point
-            Face face = shape.faces()[(start - 1) % shape.vertices()];
+            int pos = start - 1;
+            if (pos < 0) pos += shape.vertices();
+            Face face = shape.faces()[pos];
             //make a line from the fix point of the edge starting at
             Vector2f lineToNextPoint = lightSourcePoint.sub(face.getAbsoluteFixPoint(), new Vector2f());
             //if the face cannot be hit be the light of the source, the start is found
@@ -513,7 +524,7 @@ public class CollisionUtil {
                 startFound = true;
             else {
                 //decrement, to look further for the start
-                start = (start - 1) % shape.vertices();
+                start = pos;
             }
         }
 
