@@ -436,7 +436,7 @@ public class CollisionUtil {
         float cos = ankaSquared / hypoSquared;
         double radiant = Math.acos(cos);
         float sin = (float) Math.sin(radiant);
-        Vector2f rotatedVector = new Vector2f(lineToLight.x * cos - lineToLight.y * sin, lineToLight.y * cos + lineToLight.x * sin);
+        Vector2f rotatedVector = vectorAngle(lineToLight, cos, sin);
         //normalize to radius, so that the vector points to a point on the edge of the circle
         rotatedVector.normalize(shape.getRadius());
         Vector2f oppositeVector = rotatedVector.negate(new Vector2f());
@@ -450,16 +450,24 @@ public class CollisionUtil {
         //kinda pseudo qualified guess, based on the object size and the given precision value
         int depth = Math.round(Utils.map(approximationPrecision, 0, 1, 1, maxIteration));
         //create point list with both edge points and the point closest to the light
-        List<Vector2f> points = new ArrayList<>((int) Math.pow(2, depth));
-        points.add(rotatedVector.add(shape.centroid()));
-        points.add(shape.supportPoint(lineToLight));
-        points.add(oppositeVector.add(shape.centroid()));
-        for (int i = 0; i < depth; i++) {
-            for (int coord = points.size() - 2; coord >= 0; coord--) {
-                //TODO find support points in the middle between two known points to increase precision per depth round
-            }
+        int fractions = (int) Math.pow(2, depth);
+        if (fractions % 2 == 1)
+            fractions += 1;
+        int half = fractions / 2;
+        List<Vector2f> points = new ArrayList<>(fractions + 3);
+        for (int i = 0; i < fractions; i++) {
+            //TODO check this
+            float mappedAngle = Utils.map(i, 0, fractions, (float) radiant, (float) -radiant);
+            points.add(vectorAngle(lineToLight, (float) Math.cos(mappedAngle), (float) Math.sin(mappedAngle)));
         }
+        points.add(half, shape.supportPoint(lineToLight));
+        points.add(0, rotatedVector.add(shape.centroid()));
+        points.add(oppositeVector.add(shape.centroid()));
         return points;
+    }
+
+    private static Vector2f vectorAngle(Vector2f vector, float cos, float sin) {
+        return new Vector2f(vector.x * cos - vector.y * sin, vector.y * cos + vector.x * sin);
     }
 
     public static List<Vector2f> lightcast(PrimitiveShape shape, Point lightsource, float approximationPrecision) {
