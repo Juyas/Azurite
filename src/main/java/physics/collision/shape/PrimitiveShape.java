@@ -4,8 +4,6 @@ import org.joml.Vector2f;
 import physics.collision.CollisionUtil;
 import util.Utils;
 
-import java.util.List;
-
 /**
  * <h1>Azurite</h1>
  * <p>
@@ -220,19 +218,6 @@ public abstract class PrimitiveShape {
      */
     public Vector2f supportPoint(Vector2f v) {
         return CollisionUtil.maxDotPoint(absolutes, v);
-    }
-
-    /**
-     * Do a lightcast against this object.
-     *
-     * @param lightsource            the point of light
-     * @param approximationPrecision a value between 0 and 1 defining the precision for implicit shapes
-     * @return a list of all vertices involved in shaping the area of light in front of this object.
-     * the list guaranteed to contain the lightsource point itself as first element
-     * and that it is ordered by neighbourhood of its vertices
-     */
-    public List<Vector2f> lightcast(Point lightsource, float approximationPrecision) {
-        return CollisionUtil.lightcast(this, lightsource, approximationPrecision);
     }
 
     /**

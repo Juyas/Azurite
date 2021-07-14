@@ -3,7 +3,8 @@ package physics.collision;
 import org.joml.Matrix3x2f;
 import org.joml.Vector2f;
 import physics.Transform;
-import physics.collision.shape.*;
+import physics.collision.shape.PrimitiveShape;
+import physics.collision.shape.ShapeType;
 import util.Pair;
 import util.Triple;
 import util.Tuple;
@@ -421,122 +422,6 @@ public class CollisionUtil {
         centroid.x /= (6.0 * signedArea);
         centroid.y /= (6.0 * signedArea);
         return centroid;
-    }
-
-    //should be like the amount of pixels per triangle, increase precision as you zoom in though
-    //this value should be increased, if the precision is unnecessary high at approximationPrecision=0.01
-    //and descreased, if it is to low at approximationPrecision=1
-    private static final float LIGHTCAST_PIXEL_PRECISION = 2;
-
-    private static List<Vector2f> lightcastForCircle(Circle shape, Point lightsource, float approximationPrecision) {
-        Vector2f lineToCenter = shape.centroid().sub(lightsource.centroid(), new Vector2f());
-        Vector2f lineToLight = lineToCenter.negate(new Vector2f());
-        float hypoSquared = lineToCenter.lengthSquared();
-        float ankaSquared = shape.getRadiusSquared();
-        float cos = ankaSquared / hypoSquared;
-        double radiant = Math.acos(cos);
-        float sin = (float) Math.sin(radiant);
-        Vector2f rotatedVector = vectorAngle(lineToLight, cos, sin);
-        //normalize to radius, so that the vector points to a point on the edge of the circle
-        rotatedVector.normalize(shape.getRadius());
-        Vector2f oppositeVector = rotatedVector.negate(new Vector2f());
-        //if there is no precision requested, just return the cone
-        if (approximationPrecision <= 0)
-            return Arrays.asList(lightsource.centroid(), rotatedVector.add(shape.centroid()), oppositeVector.add(shape.centroid()));
-        //limit precision
-        if (approximationPrecision > 1) approximationPrecision = 1;
-        //calculate a useful precision relative to the radius and the LIGHTCAST_PIXEL_PRECISION constant
-        float maxIteration = shape.getRadius() / LIGHTCAST_PIXEL_PRECISION;
-        //kinda pseudo qualified guess, based on the object size and the given precision value
-        int depth = Math.round(Utils.map(approximationPrecision, 0, 1, 1, maxIteration));
-        //create point list with both edge points and the point closest to the light
-        int fractions = (int) Math.pow(2, depth);
-        if (fractions % 2 == 1)
-            fractions += 1;
-        int half = fractions / 2;
-        List<Vector2f> points = new ArrayList<>(fractions + 3);
-        for (int i = 0; i < fractions; i++) {
-            //TODO check this
-            float mappedAngle = Utils.map(i, 0, fractions, (float) radiant, (float) -radiant);
-            points.add(vectorAngle(lineToLight, (float) Math.cos(mappedAngle), (float) Math.sin(mappedAngle)).normalize(shape.getRadius()));
-        }
-        //points.add(half, shape.supportPoint(lineToLight));
-        points.add(0, rotatedVector.add(shape.centroid()));
-        points.add(oppositeVector.add(shape.centroid()));
-        return points;
-    }
-
-    public static void main(String[] args) {
-        Circle circle = Shapes.circle(new Vector2f(0, 0), 5);
-        circle.setPosition(new Vector2f(0, 0));
-        Point lightsource = new Point(new Vector2f(0, 0));
-        lightsource.setPosition(new Vector2f(-8, 0));
-        List<Vector2f> lightcast = lightcast(circle, lightsource, 1f);
-        System.out.println(Arrays.toString(lightcast.toArray()));
-    }
-
-    private static Vector2f vectorAngle(Vector2f vector, float cos, float sin) {
-        return new Vector2f(vector.x * cos - vector.y * sin, vector.y * cos + vector.x * sin);
-    }
-
-    public static List<Vector2f> lightcast(PrimitiveShape shape, Point lightsource, float approximationPrecision) {
-        if (shape.type() == ShapeType.CIRCLE)
-            return lightcastForCircle((Circle) shape, lightsource, approximationPrecision);
-        List<Vector2f> fan = new ArrayList<>(shape.vertices());
-        //lightsource first
-        Vector2f lightSourcePoint = lightsource.centroid();
-        fan.add(lightSourcePoint);
-        //now every vertex in order, that is reachable by the lightray
-        //to achieve that, check all face normals and choose all faces,
-        //which normals have less than 90 degree angle to the lightray
-
-        //keep vertices range in mind
-        int start, end;
-
-        //closest point towards the light
-        int closestPoint = maxDotPointIndex(shape.getAbsolutePoints(), lightSourcePoint.sub(shape.centroid(), new Vector2f()));
-        start = closestPoint;
-        end = closestPoint;
-        boolean endFound = false, startFound = false;
-        while (!endFound || !startFound) {
-            if (!endFound) {
-                Face face = shape.faces()[end];
-                //make a line from the fix point of the edge starting at
-                Vector2f lineToNextPoint = lightSourcePoint.sub(face.getAbsoluteFixPoint(), new Vector2f());
-                //if the face cannot be hit be the light of the source, the end is found
-                if (face.getOuterNormal().dot(lineToNextPoint) <= 0)
-                    endFound = true;
-                else {
-                    //increment, to look further for the end
-                    end = (end + 1) % shape.vertices();
-                }
-            }
-            if (startFound) continue;
-            //same stuff, just with the start now
-            //take face ending at the current starting point
-            int pos = start - 1;
-            if (pos < 0) pos += shape.vertices();
-            Face face = shape.faces()[pos];
-            //make a line from the fix point of the edge starting at
-            Vector2f lineToNextPoint = lightSourcePoint.sub(face.getAbsoluteFixPoint(), new Vector2f());
-            //if the face cannot be hit be the light of the source, the start is found
-            if (face.getOuterNormal().dot(lineToNextPoint) <= 0)
-                startFound = true;
-            else {
-                //decrement, to look further for the start
-                start = pos;
-            }
-        }
-
-        //add all points from start to end inclusive to the fan
-        int curr = start;
-        fan.add(shape.getAbsolutePoints()[start]);
-        while (curr != end) {
-            curr = (curr + 1) % shape.vertices();
-            fan.add(shape.getAbsolutePoints()[curr]);
-        }
-
-        return fan;
     }
 
     /**
