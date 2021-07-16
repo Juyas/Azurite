@@ -1,6 +1,7 @@
 package scene;
 
 import ecs.GameObject;
+import ecs.LightBody;
 import ecs.RigidBody;
 import ecs.StaticCollider;
 import graphics.Camera;
@@ -13,6 +14,7 @@ import input.Keyboard;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 import physics.collision.Collider;
+import physics.light.LightAffectingBody;
 import postprocess.ForwardToTexture;
 import postprocess.PostProcessStep;
 import util.Assets;
@@ -41,6 +43,7 @@ public abstract class Scene {
     private final List<GameObject> gameObjects = new LinkedList<>();
     private final List<Collider> staticColliders = new LinkedList<>();
     private final List<Collider> bodyColliders = new LinkedList<>();
+    private final List<LightAffectingBody> lightAffectedBodies = new LinkedList<>();
 
     protected ForwardToTexture forwardToScreen;
 
@@ -84,7 +87,7 @@ public abstract class Scene {
 
     /**
      * Do a collision check for the specific collider with all known rigidBodies and staticColliders.
-     * If there is a collision, the given object will receive calls to {@link Collider#handleCollision(Collider,Tuple)}.
+     * If there is a collision, the given object will receive calls to {@link Collider#handleCollision(Collider, Tuple)}.
      *
      * @param collider the object to check whether is collides with anything
      */
@@ -140,6 +143,12 @@ public abstract class Scene {
     }
 
     public final void updateGameObject(GameObject gameObject, boolean insertion) {
+        LightBody lightBody = gameObject.getComponent(LightBody.class);
+        if (lightBody != null) {
+            if (insertion && !lightAffectedBodies.contains(lightBody))
+                lightAffectedBodies.add(lightBody);
+            else lightAffectedBodies.remove(lightBody);
+        }
         StaticCollider staticCollider = gameObject.getComponent(StaticCollider.class);
         if (staticCollider != null && !staticColliders.contains(staticCollider)) {
             if (insertion)

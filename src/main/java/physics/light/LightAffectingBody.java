@@ -1,6 +1,8 @@
 package physics.light;
 
+import org.joml.Vector2f;
 import physics.collision.shape.PrimitiveShape;
+import util.Pair;
 
 /**
  * <h1>Azurite</h1>
@@ -9,7 +11,7 @@ import physics.collision.shape.PrimitiveShape;
  * @version 14.07.2021
  * @since 14.07.2021
  */
-public interface LightBody {
+public interface LightAffectingBody {
 
     /**
      * The shape of the lightbody.
@@ -18,6 +20,6 @@ public interface LightBody {
      */
     PrimitiveShape getVisibleShape();
 
-
+    Pair<Vector2f, Vector2f> outerEdges(Vector2f lightsource);
 
 }
