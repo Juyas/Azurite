@@ -12,8 +12,11 @@ import org.joml.Vector2f;
  */
 public class LightRay {
 
+    private Vector2f source;
     private Vector2f direction;
-    private float intensity;
+    private float range;
     private Color color;
+
+
 
 }
