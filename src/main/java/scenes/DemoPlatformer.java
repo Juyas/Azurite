@@ -20,19 +20,18 @@ import util.Utils;
 import static graphics.Graphics.setDefaultBackground;
 
 public class DemoPlatformer extends Scene {
-    public static void main(String[] args) {
-        Engine.init(1200, 900, "Azurite Engine Demo 2", 1.0f);
-        Engine.scenes().switchScene(new DemoPlatformer(), true);
-        Engine.showWindow();
-    }
-
     BloomEffect bloom;
-
     Spritesheet a;
     Spritesheet c;
     TilesystemSideScroll t;
     GameObject player;
     GameObject booper;
+
+    public static void main(String[] args) {
+        Engine.init(1200, 900, "Azurite Engine Demo 2", 1.0f);
+        Engine.scenes().switchScene(new DemoPlatformer(), true);
+        Engine.showWindow();
+    }
 
     public void awake() {
         camera = new Camera();
@@ -50,7 +49,7 @@ public class DemoPlatformer extends Scene {
         playerBody.applyForce(new ConstantForce("Gravity", new Vector2f(0, 0.010f)));
         player.addComponent(playerBody);
         player.addComponent(new SpriteRenderer(a.getSprite(132)));
-        player.addComponent(new CharacterController());
+        player.addComponent(new CharacterController(CharacterController.standardPlatformer(playerBody), 1));
 
         booper = new GameObject(this, "Booper", new Transform(800, 800, 100, 100), 2);
         booper.addComponent(new SpriteRenderer(a.getSprite(150)));

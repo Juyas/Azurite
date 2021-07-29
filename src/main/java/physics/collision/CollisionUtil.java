@@ -435,7 +435,7 @@ public class CollisionUtil {
      * @return Returns true if the point is inside the circle, otherwise returns false.
      */
     public static boolean inCircle(float inX, float inY, float circleX, float circleY, float radius) {
-        return Utils.dist(inX, inY, circleX, circleY) < radius * 2;
+        return Utils.dist(inX, inY, circleX, circleY) <= radius;
     }
 
     /**
@@ -448,7 +448,7 @@ public class CollisionUtil {
      * @return Returns true if the point is inside the circle, otherwise returns false.
      */
     public static boolean inCircle(Vector2f in, float circleX, float circleY, float radius) {
-        return Utils.dist(in.x, in.y, circleX, circleY) < radius * 2;
+        return Utils.dist(in.x, in.y, circleX, circleY) <= radius;
     }
 
     /**
@@ -460,7 +460,7 @@ public class CollisionUtil {
      * @return Returns true if the point is inside the circle, otherwise returns false.
      */
     public static boolean inCircle(Vector2f in, Vector2f circle, float radius) {
-        return Utils.dist(in.x, in.y, circle.x, circle.y) < radius * 2;
+        return Utils.dist(in.x, in.y, circle.x, circle.y) <= radius;
     }
 
     /**
@@ -500,10 +500,10 @@ public class CollisionUtil {
      * @return returns boolean true if t1 is inside of t2
      */
     public static boolean rectInRect(Transform t1, Transform t2) {
-        return t1.getPosition().x < t2.scale.x &&
-                t1.scale.x > t2.getPosition().x &&
-                t1.getPosition().y < t2.scale.y &&
-                t1.scale.y > t2.getPosition().y;
+        return inRect(new Vector2f(t1.getX(), t1.getY()), t2.getX(), t2.getY(), t2.getWidth(), t2.getHeight()) &&
+                inRect(new Vector2f(t1.getX(), t1.getY() + t1.getHeight()), t2.getX(), t2.getY(), t2.getWidth(), t2.getHeight()) &&
+                inRect(new Vector2f(t1.getX() + t1.getWidth(), t1.getY()), t2.getX(), t2.getY(), t2.getWidth(), t2.getHeight()) &&
+                inRect(new Vector2f(t1.getX() + t1.getWidth(), t1.getY() + t1.getHeight()), t2.getX(), t2.getY(), t2.getWidth(), t2.getHeight());
     }
 
 }

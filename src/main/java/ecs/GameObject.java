@@ -22,21 +22,17 @@ import java.util.List;
 
 public class GameObject {
 
-    private static long internalCounter = 0;
-
     public static final String DEFAULT_GAMEOBJECT_NAME = "Default GameObject Name";
     public static final String EMPTY_GAMEOBJECT_NAME = "Empty GameObject";
     public static final int DEFAULT_Z_INDEX = 0;
-
+    private static long internalCounter = 0;
     private final long objId = internalCounter++;
-
-    private String name;
     private final OrderPreservingList<Component> components;
+    private final Scene parentScene;
+    private final Collection<TransformSensitive> transformSensitives;
+    private String name;
     private Transform transform;
     private int zIndex;
-    private final Scene parentScene;
-
-    private final Collection<TransformSensitive> transformSensitives;
 
     /**
      * Creates a new GameObject.
@@ -180,8 +176,9 @@ public class GameObject {
 
     @Deprecated
     public void setZindex(int z) {
-        //FIXME dangerous, currently the renderer wont be updated, I deprecated it temporarily for that
+        parentScene.removeGameObjectFromScene(this);
         zIndex = z;
+        parentScene.addGameObjectToScene(this);
     }
 
     public String name() {
@@ -217,6 +214,8 @@ public class GameObject {
         for (int i = 0; i < components.size(); i++) {
             Component c = components.get(i);
             if (componentClass.isAssignableFrom(c.getClass())) {
+                c.remove();
+                c.gameObject = null;
                 components.remove(i);
                 if (c instanceof TransformSensitive)
                     transformSensitives.remove(c);
@@ -242,6 +241,13 @@ public class GameObject {
         if (c instanceof TransformSensitive)
             this.transformSensitives.add((TransformSensitive) c);
         c.gameObject = this;
+        //TODO check if this is necessary
+        if (getParentScene() != null) {
+            if (getParentScene().isActive()) {
+                c.start();
+                getParentScene().addToRenderers(this);
+            }
+        }
         //update collision maps in scene
         parentScene.updateGameObject(this, true);
         return this;

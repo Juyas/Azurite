@@ -59,7 +59,7 @@ public abstract class PrimitiveShape {
     /**
      * The centroid of the shape - the absolute vector (position is already added to it)
      *
-     * @see #getAbsoluteCentroid()
+     * @see #centroid()
      */
     protected Vector2f absoluteCentroid;
 
@@ -122,6 +122,15 @@ public abstract class PrimitiveShape {
     }
 
     /**
+     * @param x the x coord
+     * @param y the y coord
+     * @see #setPosition(Vector2f)
+     */
+    public final void setPosition(float x, float y) {
+        setPosition(new Vector2f(x, y));
+    }
+
+    /**
      * @see this#position
      */
     public final Vector2f position() {
@@ -133,13 +142,6 @@ public abstract class PrimitiveShape {
      */
     public final Vector2f[] getAbsolutePoints() {
         return absolutes;
-    }
-
-    /**
-     * @see this#absoluteCentroid
-     */
-    public final Vector2f getAbsoluteCentroid() {
-        return absoluteCentroid;
     }
 
     /**
@@ -190,9 +192,55 @@ public abstract class PrimitiveShape {
     }
 
     /**
+     * Rotate a shape around a specific point and a given radianAngle.
+     *
+     * @param radianAngle the radian angle to rotate the shape
+     * @param type        the type of rotation
+     * @param point       the optional point to rotate around; if type is not {@link RotationType#AROUND_POINT}, the point can be null
+     * @return true, if the rotation was successful
+     * @see Utils#rotateAroundPoint(Vector2f, Vector2f, float)
+     * @see Utils#radian(float)
+     */
+    public final boolean rotateShape(float radianAngle, RotationType type, Vector2f point) {
+        //rotating a circle around its center is pointless
+        if (type == RotationType.AROUND_CENTER && this.type == ShapeType.CIRCLE) return true;
+        //rotation by 0 angle is like not rotating at all
+        if (radianAngle == 0) return true;
+        if (type == null)
+            throw new IllegalArgumentException("RotationType is not supposed to be null");
+        if (type == RotationType.AROUND_POINT && point == null)
+            throw new IllegalArgumentException("Rotation around a point is only possible, if the point is not null");
+        Vector2f pointToRotateAround;
+        switch (type) {
+            case AROUND_ORIGIN:
+                pointToRotateAround = new Vector2f(0, 0);
+                break;
+            case AROUND_POINT:
+                pointToRotateAround = point;
+                break;
+            case AROUND_CENTER:
+            default:
+                pointToRotateAround = relativeCentroid;
+                break;
+        }
+        //rotate all relative vertices if the shape is not a circle
+        if (this.type != ShapeType.CIRCLE)
+            for (int i = 0; i < vertices; i++) {
+                relatives[i] = Utils.rotateAroundPoint(relatives[i], pointToRotateAround, radianAngle);
+            }
+        //the centeroid does change, if the centroid is not the point to rotate around
+        if (type != RotationType.AROUND_CENTER)
+            relativeCentroid = Utils.rotateAroundPoint(relativeCentroid, pointToRotateAround, radianAngle);
+        //adjust all absolute points
+        adjust();
+        return true;
+    }
+
+    /**
      * The center point or weight point of the shape.
      *
      * @return centroid of the shape
+     * @see #absoluteCentroid
      */
     public final Vector2f centroid() {
         return absoluteCentroid;
