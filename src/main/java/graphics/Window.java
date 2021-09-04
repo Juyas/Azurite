@@ -4,8 +4,7 @@ package graphics;
 import event.EventData;
 import event.Events;
 import input.Keyboard;
-import input_old.Keyboard_old;
-import input_old.Mouse_old;
+import input.Mouse;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import postprocess.PostProcessing;
@@ -18,18 +17,16 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Window {
 
-    private SceneManager sceneManager;
-
-    // Window Variables
-    private long frameCount = 0;
-
-    private String title;
     private static long glfwWindow;
-    private final GLFWVidMode videoMode;
-
     private static int width;
     private static int height;
+    private final GLFWVidMode videoMode;
     private final boolean recalculateProjectionOnResize;
+    private SceneManager sceneManager;
+    // Window Variables
+    private long frameCount = 0;
+    private String title;
+    private boolean sleeping = false;
 
     public Window(int pwidth, int pheight, String ptitle, boolean fullscreen, float minSceneLighting, boolean recalculateProjectionOnResize) {
         videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -99,15 +96,20 @@ public class Window {
 
         // Set up callback
         glfwSetWindowSizeCallback(glfwWindow, (w, newWidth, newHeight) -> {
-            Window.setWidth(newWidth);
-            Window.setHeight(newHeight);
+            if (newWidth == 0 || newHeight == 0) {
+                sleeping = true;
+                return;
+            }
+            sleeping = false;
+            Window.width = newWidth;
+            Window.height = newHeight;
 
             if (recalculateProjectionOnResize && currentScene().camera() != null)
                 currentScene().camera().adjustProjection();
             Events.windowResizeEvent.onEvent(new EventData.WindowResizeEventData(newWidth, newHeight));
         });
 
-        Mouse_old.setupCallbacks();
+        Mouse.setupCallbacks();
         Keyboard.setupCallbacks();
 
         // Make the OpenGL context current
@@ -128,12 +130,20 @@ public class Window {
         glfwSetWindowTitle(glfwWindow, title + " @ " + Math.round((frameCount / (Engine.millisRunning() / 1000))) + " FPS");
     }
 
-    public static long glfwWindow() {
-        return glfwWindow;
-    }
-
     public String getTitle() {
         return title;
+    }
+
+    public static int getHeight() {
+        return height;
+    }
+
+    public static int getWidth() {
+        return width;
+    }
+
+    public static long glfwWindow() {
+        return glfwWindow;
     }
 
     public void setTitle(String title) {
@@ -160,20 +170,18 @@ public class Window {
             frameEndTime = glfwGetTime();
             Engine.updateDeltaTime((float) (frameEndTime - frameBeginTime));
             frameBeginTime = frameEndTime;
-
-            Mouse_old.update();
-            Keyboard_old.update();
-            // poll GLFW for input events
             glfwPollEvents();
 
-            sceneManager.update();
-            sceneManager.updateGameObjects();
-            sceneManager.render();
-            PostProcessing.prepare();
-            sceneManager.postProcess(currentScene().renderer.fetchColorAttachment(0));
-            PostProcessing.finish();
-            sceneManager.debugRender();
-
+            if (!sleeping) {
+                Mouse.update();
+                sceneManager.update();
+                sceneManager.updateGameObjects();
+                sceneManager.render();
+                PostProcessing.prepare();
+                sceneManager.postProcess(currentScene().renderer.fetchColorAttachment(0));
+                PostProcessing.finish();
+                sceneManager.debugRender();
+            }
             glfwSwapBuffers(glfwWindow);
             getFPS();
         }
@@ -193,21 +201,5 @@ public class Window {
 
     public SceneManager getSceneManager() {
         return sceneManager;
-    }
-
-    private static void setHeight(int newHeight) {
-        height = newHeight;
-    }
-
-    private static void setWidth(int newWidth) {
-        width = newWidth;
-    }
-
-    public static int getWidth() {
-        return width;
-    }
-
-    public static int getHeight() {
-        return height;
     }
 }
