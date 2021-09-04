@@ -3,8 +3,8 @@ package graphics;
 
 import event.EventData;
 import event.Events;
-import input.Keyboard;
-import input.Mouse;
+import input_old.Keyboard_old;
+import input_old.Mouse_old;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import postprocess.PostProcessing;
@@ -109,8 +109,8 @@ public class Window {
             Events.windowResizeEvent.onEvent(new EventData.WindowResizeEventData(newWidth, newHeight));
         });
 
-        Mouse.setupCallbacks();
-        Keyboard.setupCallbacks();
+        Mouse_old.setupCallbacks();
+        Keyboard_old.setupCallbacks();
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(glfwWindow);
@@ -173,7 +173,7 @@ public class Window {
             glfwPollEvents();
 
             if (!sleeping) {
-                Mouse.update();
+                Mouse_old.update();
                 sceneManager.update();
                 sceneManager.updateGameObjects();
                 sceneManager.render();
