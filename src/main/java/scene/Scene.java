@@ -1,7 +1,6 @@
 package scene;
 
 import ecs.GameObject;
-import ecs.LightBody;
 import ecs.RigidBody;
 import ecs.StaticCollider;
 import graphics.Camera;
@@ -13,7 +12,6 @@ import graphics.renderer.Renderer;
 import input.Keyboard;
 import org.lwjgl.glfw.GLFW;
 import physics.collision.Collider;
-import physics.light.LightAffectingBody;
 import physics.collision.CollisionInformation;
 import postprocess.ForwardToTexture;
 import postprocess.PostProcessStep;
@@ -83,7 +81,6 @@ public abstract class Scene {
     private final List<GameObject> gameObjects = new LinkedList<>();
     private final List<Collider> staticColliders = new LinkedList<>();
     private final List<Collider> bodyColliders = new LinkedList<>();
-    private final List<LightAffectingBody> lightAffectedBodies = new LinkedList<>();
     public DefaultRenderer renderer = new DefaultRenderer();
     public LightmapRenderer lightmapRenderer = new LightmapRenderer();
     public DebugRenderer debugRenderer = new DebugRenderer();
@@ -194,12 +191,6 @@ public abstract class Scene {
     }
 
     public final void updateGameObject(GameObject gameObject, boolean insertion) {
-        LightBody lightBody = gameObject.getComponent(LightBody.class);
-        if (lightBody != null) {
-            if (insertion && !lightAffectedBodies.contains(lightBody))
-                lightAffectedBodies.add(lightBody);
-            else lightAffectedBodies.remove(lightBody);
-        }
         StaticCollider staticCollider = gameObject.getComponent(StaticCollider.class);
         if (staticCollider != null && !staticColliders.contains(staticCollider)) {
             if (insertion)
