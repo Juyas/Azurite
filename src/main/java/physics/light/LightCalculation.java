@@ -4,10 +4,13 @@ import ecs.LightBody;
 import graphics.HSLColor;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
+import physics.collision.CollisionUtil;
+import physics.collision.shape.Circle;
 import physics.collision.shape.PrimitiveShape;
 
 import java.nio.FloatBuffer;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <h1>Azurite</h1>
@@ -20,10 +23,22 @@ public class LightCalculation {
 
     public static FloatBuffer calcPointLight(List<LightBody> worldObjects, Vector2f pointLightPosition, HSLColor pointLightColor, int circlePrecision, float lightReach) {
         //educated guess, to potentially reduce regenerating/resizing the buffer
-        // -> amount of all objects estimated with 50 per object for circles times the precision modifier
+        //float buffer will contain triangles with colors for a fan
+        //[posX,posY,colorR,colorG,colorB,colorA...]
+        //elementwise you can build triangles like the following:
+        //elements: [1,2,3,4] -> root+1+2, root+2+3, root+3+4, root+4+1
         FloatBuffer floatBuffer = FloatBuffer.allocate(worldObjects.size() * circlePrecision);
 
-        //TODO
+        //a circle to model the range of the point light
+        Circle circle = new Circle(new Vector2f(0, 0), lightReach);
+        circle.setPosition(pointLightPosition);
+        //filter all bodies, that could be hit by distance
+        List<LightBody> bodies = worldObjects.stream()
+                .filter(obj -> CollisionUtil.gjksmCollision(circle, obj.getShape()).collision())
+                .sorted((body1, body2) -> Float.compare(body1.getShape().centroid().distanceSquared(pointLightPosition), body2.getShape().centroid().distanceSquared(pointLightPosition)))
+                .collect(Collectors.toList());
+
+        //TODO ray casting /ray marching
 
         return floatBuffer;
     }
@@ -38,11 +53,13 @@ public class LightCalculation {
      * @return a Vector2i containing the tangent points as their indices in {@link PrimitiveShape#getAbsolutePoints()}
      */
     public static Vector2i getTangentPoints(PrimitiveShape shape, Vector2f sourcePoint) {
+        //vector from the center of the shape to sourcePoint
         Vector2f direction = sourcePoint.sub(shape.centroid(), new Vector2f());
         int vertices = shape.vertices();
         float angle = 1;
         int target = -1;
         Vector2f targetPoint = null;
+        //find the point creating the smallest angle to the direction vector to get one tangent point
         for (int i = 0; i < vertices; i++) {
             Vector2f pointX = shape.getAbsolutePoints()[i];
             float ang = repAngle(sourcePoint.sub(pointX, new Vector2f()), direction);
@@ -54,6 +71,11 @@ public class LightCalculation {
         }
         angle = 1;
         int secondTarget = -1;
+        //use the first tangent point to get the second one by redefining the direction as the vector
+        //from the first tangent point to the sourcePoint
+        //finding the smallest angle now will result in the second tangent point,
+        //since the angle against a convex shape can never accede 180 degree,
+        //the used repAngle method will never produce numbers, that start to grow again
         Vector2f targetDirection = sourcePoint.sub(targetPoint, new Vector2f());
         for (int i = 0; i < vertices; i++) {
             Vector2f pointX = shape.getAbsolutePoints()[i];
