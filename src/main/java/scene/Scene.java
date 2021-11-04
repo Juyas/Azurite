@@ -1,6 +1,7 @@
 package scene;
 
 import ecs.GameObject;
+import ecs.LightBody;
 import ecs.RigidBody;
 import ecs.StaticCollider;
 import graphics.Camera;
@@ -72,6 +73,7 @@ import java.util.List;
  *     }
  * </pre>
  * </p>
+ *
  * @see SceneManager
  */
 public abstract class Scene {
@@ -81,6 +83,7 @@ public abstract class Scene {
     private final List<GameObject> gameObjects = new LinkedList<>();
     private final List<Collider> staticColliders = new LinkedList<>();
     private final List<Collider> bodyColliders = new LinkedList<>();
+    private final List<LightBody> lightBodies = new LinkedList<>();
     public DefaultRenderer renderer = new DefaultRenderer();
     public LightmapRenderer lightmapRenderer = new LightmapRenderer();
     public DebugRenderer debugRenderer = new DebugRenderer();
@@ -191,6 +194,12 @@ public abstract class Scene {
     }
 
     public final void updateGameObject(GameObject gameObject, boolean insertion) {
+        LightBody lightBody = gameObject.getComponent(LightBody.class);
+        if (lightBody != null) {
+            if (insertion)
+                lightBodies.add(lightBody);
+            else lightBodies.remove(lightBody);
+        }
         StaticCollider staticCollider = gameObject.getComponent(StaticCollider.class);
         if (staticCollider != null && !staticColliders.contains(staticCollider)) {
             if (insertion)

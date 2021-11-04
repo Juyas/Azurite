@@ -227,15 +227,14 @@ public class GameObject {
             if (componentClass.isAssignableFrom(c.getClass())) {
                 c.remove();
                 c.gameObject = null;
+                parentScene.updateGameObject(this, false);
                 components.remove(i);
                 if (c instanceof LocationSensitive)
                     transformSensitives.remove(c);
-                parentScene.updateGameObject(this, false);
                 return;
             }
         }
     }
-
 
     /**
      * Adds a new component to the GameObject's list.
