@@ -4,7 +4,6 @@ import ecs.LightBody;
 import graphics.HSLColor;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
-import physics.collision.Shapes;
 import physics.collision.shape.PrimitiveShape;
 
 import java.nio.FloatBuffer;
@@ -75,19 +74,6 @@ public class LightCalculation {
         float dot = a.dot(b);
         float div = a.lengthSquared() * b.lengthSquared();
         return dot * Math.abs(dot) / div;
-    }
-
-    public static void main(String[] args) {
-
-        PrimitiveShape polygon = Shapes.convexPolygon(-5, 1, -2, 0, 1, 0, 4, 1, 6, 3, 3, 6, -3, 6, -6, 5, -7, 3);
-        polygon.setPosition(0, 0);
-
-        Vector2i tangentPoints = getTangentPoints(polygon, new Vector2f(4, -3));
-
-        System.out.println(tangentPoints);
-        System.out.println(polygon.getAbsolutePoints()[tangentPoints.x]);
-        System.out.println(polygon.getAbsolutePoints()[tangentPoints.y]);
-
     }
 
 }
