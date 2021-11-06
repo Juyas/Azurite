@@ -7,9 +7,11 @@ import org.joml.Vector2i;
 import physics.collision.CollisionUtil;
 import physics.collision.shape.Circle;
 import physics.collision.shape.PrimitiveShape;
+import util.Pair;
 
 import java.nio.FloatBuffer;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -87,6 +89,26 @@ public class LightCalculation {
         }
 
         return new Vector2i(target, secondTarget);
+    }
+
+    /**
+     * Cast two rays and see if they intersect.
+     * The solution will be calculated based on endless rays with a fixpoint and a ray direction.
+     * If a there is intersection point of both ray, they arent parallel and the factors x and y are calculated,
+     * so that intersection = pointA+x*rayA = pointB+y*rayB is valid.
+     *
+     * @param pointA the starting point of ray 1
+     * @param rayA   the direction and length of ray 1
+     * @param pointB the starting point of ray 2
+     * @param rayB   the direction of ray 2
+     * @return a pair containing the intersection point first and a vector with factors x and y
+     */
+    public static Optional<Pair<Vector2f, Vector2f>> rayCastIntersection(Vector2f pointA, Vector2f rayA, Vector2f pointB, Vector2f rayB) { //x,a,y,b
+        //solve the linear equation
+        Vector2f factors = CollisionUtil.solveSimultaneousEquations(rayA.x, -rayB.x, rayA.y, -rayB.y, pointB.x - pointA.x, pointB.y - pointA.y);
+        //calculate the point where the intersection happened and return
+        Vector2f dest = rayA.mul(factors.x, new Vector2f());
+        return Optional.of(new Pair<>(dest.add(pointA), factors));
     }
 
     //helper method to calculate an angle relation without calculating the angle exactly

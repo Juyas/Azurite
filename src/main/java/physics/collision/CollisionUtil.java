@@ -363,7 +363,11 @@ public class CollisionUtil {
     }
 
     //helper function to solve 2d linear system
-    private static Vector2f solveSimultaneousEquations(float a, float b, float c, float d, float e, float f) {
+
+    /**
+     * @see #solveSimultaneousEquations(Matrix3x2f)
+     */
+    public static Vector2f solveSimultaneousEquations(float a, float b, float c, float d, float e, float f) {
         float det = 1 / (a * d - b * c);
         float x = (d * e - b * f);
         float y = (a * f - c * e);

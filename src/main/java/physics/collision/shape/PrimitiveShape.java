@@ -2,7 +2,11 @@ package physics.collision.shape;
 
 import org.joml.Vector2f;
 import physics.collision.CollisionUtil;
+import physics.light.LightCalculation;
+import util.Pair;
 import util.Utils;
+
+import java.util.Optional;
 
 /**
  * <h1>Azurite</h1>
@@ -266,6 +270,54 @@ public abstract class PrimitiveShape {
      */
     public Vector2f supportPoint(Vector2f v) {
         return CollisionUtil.maxDotPoint(absolutes, v);
+    }
+
+    /**
+     * Distance function to calculate the closest point to a given one.
+     *
+     * @param point given point
+     * @return a point on the shapes border closest to the given one
+     */
+    public Vector2f closestPoint(Vector2f point) {
+        int index = -1;
+        float distance = Float.MAX_VALUE;
+        //find the closest point on the shape
+        for (int i = 0; i < vertices; i++) {
+            float d = point.distanceSquared(absolutes[i]);
+            if (d < distance) {
+                distance = d;
+                index = i;
+            }
+        }
+        //the two closest faces according to the closest point
+        Face face1 = faces[index];
+        Face face2 = faces[(vertices + index - 1) % vertices];
+        Vector2f intersect1 = null, intersect2 = null;
+        //calculate the first intersection point - if there is one
+        Optional<Pair<Vector2f, Vector2f>> optPair = LightCalculation.rayCastIntersection(face1.getAbsoluteFixPoint(), face1.getRelativeFace(), point, face1.getOuterNormal());
+        if (optPair.isPresent()) {
+            Pair<Vector2f, Vector2f> pair = optPair.get();
+            if (pair.getRight().x >= 0 && pair.getRight().x <= 1) {
+                intersect1 = pair.getLeft();
+            }
+        }
+        //calculate the second intersection point - if there is one
+        optPair = LightCalculation.rayCastIntersection(face2.getAbsoluteFixPoint(), face2.getRelativeFace(), point, face2.getOuterNormal());
+        if (optPair.isPresent()) {
+            Pair<Vector2f, Vector2f> pair = optPair.get();
+            if (pair.getRight().x >= 0 && pair.getRight().x <= 1) {
+                intersect2 = pair.getLeft();
+            }
+        }
+        //decide which is the right and closest intersection point
+        if (intersect1 != null) {
+            if (intersect2 != null) {
+                if (intersect1.distanceSquared(point) > intersect2.distanceSquared(point))
+                    return intersect2;
+                else return intersect1;
+            } else return intersect1;
+        } else if (intersect2 != null) return intersect2;
+        return absolutes[index];
     }
 
     /**

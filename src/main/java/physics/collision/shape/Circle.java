@@ -63,6 +63,11 @@ public class Circle extends PrimitiveShape {
         return distanceSquared - radiusSquared <= 0;
     }
 
+    @Override
+    public Vector2f closestPoint(Vector2f point) {
+        return supportPoint(point.sub(absoluteCentroid, new Vector2f()));
+    }
+
     /**
      * Calculate a raycast against this circle using absolute coordinates.
      *

@@ -67,4 +67,10 @@ public class Pair<L, R> {
         return new Triple<>(getLeft(), getRight(), right);
     }
 
+    @Override
+    public String toString() {
+        return "Pair{" + left +
+                ", " + right +
+                '}';
+    }
 }
