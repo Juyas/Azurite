@@ -1,18 +1,16 @@
 package ecs;
 
 import graphics.Color;
-import graphics.RenderableComponent;
-import graphics.renderer.QuadRenderBatch;
 import org.joml.Vector3f;
-import physics.Transform;
-import physics.TransformSensitive;
 
 /**
- * A Point Light Component.
+ * A Point Light Component is essentially a location in the world that emits light in
+ * all directions. One can also specify both it's color and it's intensity.
  *
  * @author VoxelRifts
  */
-public class PointLight extends RenderableComponent<QuadRenderBatch> implements TransformSensitive {
+public class PointLight extends Component {
+
     /**
      * Colour of the light
      */
@@ -23,11 +21,6 @@ public class PointLight extends RenderableComponent<QuadRenderBatch> implements 
      * It controls how far the light's attenuation will reach
      */
     public float intensity;
-
-    /**
-     * Transform of the parent GameObject to get the position
-     */
-    public Transform lastTransform;
 
     /**
      * Constructor which sets color of the light by default to white.
@@ -43,19 +36,14 @@ public class PointLight extends RenderableComponent<QuadRenderBatch> implements 
      * @param intensity float: Intensity of the light
      */
     public PointLight(Color color, float intensity) {
+        super(ComponentOrder.DRAW);
         this.color = color.toNormalizedVec3f();
         this.intensity = intensity;
-        this.order = SpriteRenderer.ORDER + 1;
     }
 
     @Override
     public void start() {
-        this.lastTransform = gameObject.getReadOnlyTransform();
-    }
 
-    @Override
-    public void remove() {
-        getBatch().getRenderer().remove(this.gameObject);
     }
 
     @Override
@@ -63,14 +51,4 @@ public class PointLight extends RenderableComponent<QuadRenderBatch> implements 
 
     }
 
-    @Override
-    public void update(Transform changedTransform) {
-        //update the lastTransform
-        this.gameObject.getReadOnlyTransform().copy(this.lastTransform);
-    }
-
-    @Override
-    public boolean transformingObject() {
-        return false;
-    }
 }

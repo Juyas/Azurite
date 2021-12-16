@@ -1,13 +1,12 @@
 package ecs;
 
 import org.joml.Vector2f;
-import physics.Transform;
-import physics.TransformSensitive;
+import physics.collision.Collider;
 import scene.Scene;
+import util.Engine;
 import util.OrderPreservingList;
 
-import java.awt.*;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,86 +17,89 @@ import java.util.List;
  *
  * @author Asher Haun
  * @author Gabe
+ * @author Juyas
  */
 
 public class GameObject {
 
     public static final String DEFAULT_GAMEOBJECT_NAME = "Default GameObject Name";
-    public static final String EMPTY_GAMEOBJECT_NAME = "Empty GameObject";
     public static final int DEFAULT_Z_INDEX = 0;
     private static long internalCounter = 0;
+
     private final long objId = internalCounter++;
-    private final OrderPreservingList<Component> components;
+    private final String name;
     private final Scene parentScene;
-    private final Collection<TransformSensitive> transformSensitives;
-    private String name;
-    private Transform transform;
+    private final OrderPreservingList<Component> components;
+    private final float[] position = new float[2];
     private int zIndex;
 
     /**
      * Creates a new GameObject.
      *
-     * @param scene         the scene to object will be added to
      * @param name
      * @param componentList
-     * @param transform
+     * @param position
      * @param zIndex
      */
-    public GameObject(Scene scene, String name, List<Component> componentList, Transform transform, int zIndex) {
+    public GameObject(String name, List<Component> componentList, Vector2f position, int zIndex) {
         this.name = name;
         this.components = new OrderPreservingList<>(componentList);
-        this.transform = transform;
+        this.position[0] = position.x;
+        this.position[1] = position.y;
+        this.zIndex = zIndex;
+        this.parentScene = Engine.window().currentScene();
+        Engine.window().currentScene().addGameObjectToScene(this);
+    }
+
+    /**
+     * Creates a new GameObject.
+     *
+     * @param scene    the scene to add the GameObject to. By default, GameObjects are added to the currentScene.
+     * @param name     name of the GameObject
+     * @param position
+     * @param zIndex
+     */
+    public GameObject(Scene scene, String name, Vector2f position, int zIndex) {
+        this.name = name;
+        this.components = new OrderPreservingList<Component>(new LinkedList<>());
+        this.position[0] = position.x;
+        this.position[1] = position.y;
         this.zIndex = zIndex;
         this.parentScene = scene;
         scene.addGameObjectToScene(this);
-        this.transformSensitives = new LinkedList<>();
     }
 
     /**
-     * @param scene     the scene to object will be added to
      * @param name
-     * @param transform
+     * @param position
      * @param zIndex
      */
-    public GameObject(Scene scene, String name, Transform transform, int zIndex) {
-        this(scene, name, new LinkedList<>(), transform, zIndex);
+    public GameObject(String name, Vector2f position, int zIndex) {
+        this(name, new LinkedList<>(), position, zIndex);
     }
 
     /**
-     * @param scene  the scene to object will be added to
      * @param name
      * @param zIndex
      */
-    public GameObject(Scene scene, String name, int zIndex) {
-        this(scene, name, new LinkedList<>(), new Transform(), zIndex);
+    public GameObject(String name, int zIndex) {
+        this(name, new LinkedList<>(), new Vector2f(), zIndex);
     }
 
     /**
-     * @param scene     the scene to object will be added to
-     * @param transform
+     * @param position
      * @param zIndex
      */
-    public GameObject(Scene scene, Transform transform, int zIndex) {
-        this(scene, DEFAULT_GAMEOBJECT_NAME, new LinkedList<>(), transform, zIndex);
+    public GameObject(Vector2f position, int zIndex) {
+        this(DEFAULT_GAMEOBJECT_NAME, new LinkedList<>(), position, zIndex);
 
     }
 
     /**
-     * @param scene     the scene to object will be added to
-     * @param transform
+     * @param position
      */
-    public GameObject(Scene scene, Transform transform) {
-        this(scene, DEFAULT_GAMEOBJECT_NAME, new LinkedList<>(), transform, DEFAULT_Z_INDEX);
-    }
-
-    /**
-     * Creates an empty gameObject with an empty Transform and no Components.
-     * Its name will be GameObject.EMPTY_GAMEOBJECT_NAME
-     *
-     * @param scene the scene to object will be added to
-     */
-    public GameObject(Scene scene) {
-        this(scene, EMPTY_GAMEOBJECT_NAME, new LinkedList<>(), new Transform(), DEFAULT_Z_INDEX);
+    public GameObject(Vector2f position) {
+        this(DEFAULT_GAMEOBJECT_NAME, new LinkedList<>(), position, DEFAULT_Z_INDEX);
     }
 
     /**
@@ -113,27 +115,9 @@ public class GameObject {
      * Called once every frame for each GameObject, calls the update method for each component it contains
      */
     public void update(float dt) {
-
-        //clear position buffer at the start to only record freshly made changes
-        transform.resetPositionBuffer();
-
-        //update components, that do impact the position of the object
-        components.stream().filter(Component::transformingObject).forEach(component -> component.update(dt));
-
-        //check collision to fix the position
-        getParentScene().checkCollision(getComponent(RigidBody.class));
-
-        //apply all changes made to the position buffer
-        if (transform.applyPositionBuffer()) {
-            //reset the buffer to deny changes in transform sensitive methods
-            transform.resetPositionBuffer();
-            //update all components that are interested in a change of the transform
-            transformSensitives.forEach(transformSensitive -> transformSensitive.update(transform));
+        for (Component component : components) {
+            component.update(dt);
         }
-
-        //update components, that update the screen visually only
-        components.stream().filter(component1 -> !component1.transformingObject()).forEach(component -> component.update(dt));
-
     }
 
     /**
@@ -146,28 +130,16 @@ public class GameObject {
     /**
      * @return the universal and unique id among all objects
      */
-    public long getObjId() {
+    public long getUniqueId() {
         return objId;
     }
 
-    /**
-     * @return a new copy of the current transform of the gameObject
-     */
-    public Transform getReadOnlyTransform() {
-        return this.transform.copy();
+    public Vector2f getReadOnlyPosition() {
+        return new Vector2f(position);
     }
 
-    /**
-     * Do NOT change this transform here. Use positionBuffer for that.
-     *
-     * @return the raw transform object of the gameObject
-     */
-    public Transform getRawTransform() {
-        return this.transform;
-    }
-
-    public Vector2f positionBuffer() {
-        return transform.positionBuffer();
+    public float[] getPositionData() {
+        return position;
     }
 
     public int zIndex() {
@@ -175,7 +147,8 @@ public class GameObject {
     }
 
     @Deprecated
-    public void setZindex(int z) {
+    public void setZIndex(int z) {
+        //TODO does this work now?
         parentScene.removeGameObjectFromScene(this);
         zIndex = z;
         parentScene.addGameObjectToScene(this);
@@ -191,13 +164,13 @@ public class GameObject {
      * @param componentClass of component (ie. "SpriteRenderer.class")
      * @return Component of type passed as param is contained in GameObject
      */
-    public <T extends Component> T getComponent(Class<T> componentClass) {
+    public <T> T getComponent(Class<T> componentClass) {
         for (Component c : components) {
             if (componentClass.isAssignableFrom(c.getClass())) {
                 try {
                     return componentClass.cast(c);
                 } catch (ClassCastException e) {
-                    assert false : "[ERROR] Failed to cast component.";
+                    System.err.println("[ERROR] Failed to cast component.");
                     e.printStackTrace();
                 }
             }
@@ -206,20 +179,41 @@ public class GameObject {
     }
 
     /**
+     * Takes a parameter of a class that extends component and returns it if it is contained in the GameObject's list of components.
+     *
+     * @param componentClass of component (ie. "SpriteRenderer.class")
+     * @return all components of type passed as param is contained in GameObject
+     */
+    public <T> List<T> getComponents(Class<T> componentClass) {
+        List<T> comps = new ArrayList<>(components.size());
+        for (Component c : components) {
+            if (componentClass.isAssignableFrom(c.getClass())) {
+                try {
+                    T cast = componentClass.cast(c);
+                    comps.add(cast);
+                } catch (ClassCastException e) {
+                    System.err.println("[ERROR] Failed to cast component.");
+                    e.printStackTrace();
+                }
+            }
+        }
+        return comps;
+    }
+
+    /**
      * Takes a parameter of a class that extends component and removed it from the GameObject if it is contained in the list of components.
      *
      * @param componentClass of component (ie. "SpriteRenderer.class")
      */
-    public <T extends Component> void removeComponent(Class<T> componentClass) {
+    public <T> void removeComponent(Class<T> componentClass) {
         for (int i = 0; i < components.size(); i++) {
             Component c = components.get(i);
             if (componentClass.isAssignableFrom(c.getClass())) {
                 c.remove();
                 c.gameObject = null;
                 components.remove(i);
-                if (c instanceof TransformSensitive)
-                    transformSensitives.remove(c);
-                parentScene.updateGameObject(this, false);
+                if (c instanceof Collider)
+                    getParentScene().unregisterCollider(this);
                 return;
             }
         }
@@ -228,18 +222,12 @@ public class GameObject {
 
     /**
      * Adds a new component to the GameObject's list.
-     * If the new components conflicts with any other component, an {@link IllegalComponentStateException} will be thrown.
-     * Whether a component is conflicting with another is determined by {@link Component#isConflictingWith(Class)}.
      *
      * @param c the new component
      * @return the gameobject itself
      */
     public GameObject addComponent(Component c) {
-        if (this.components.stream().anyMatch(component -> c.isConflictingWith(component.getClass()) || component.isConflictingWith(c.getClass())))
-            throw new IllegalComponentStateException("Component " + c.getClass() + " is conflicting with existing one");
         this.components.add(c);
-        if (c instanceof TransformSensitive)
-            this.transformSensitives.add((TransformSensitive) c);
         c.gameObject = this;
         //TODO check if this is necessary
         if (getParentScene() != null) {
@@ -248,8 +236,8 @@ public class GameObject {
                 getParentScene().addToRenderers(this);
             }
         }
-        //update collision maps in scene
-        parentScene.updateGameObject(this, true);
+        if (c instanceof Collider)
+            getParentScene().registerCollider(this);
         return this;
     }
 

@@ -3,9 +3,8 @@ package ecs;
 import org.joml.Vector2f;
 import util.debug.DebugPrimitive;
 
-import java.util.Arrays;
-
 /**
+ * <h1>Azurite</h1>
  * Abstract structure for ECS Components.
  * It is highly recommended to use this when implementing any system that can/should be applied to a GameObject.
  */
@@ -18,23 +17,17 @@ public abstract class Component implements Comparable<Component> {
     public GameObject gameObject = null;
 
     /**
-     * A list of conflicting class.
-     * A component that does conflict with an existing component can not be added.
-     */
-    protected Class<?>[] conflicts;
-
-    /**
      * Used to define a set order of components and their update cycle.
      * Required to maintain consistency in the update cycle.
      */
-    protected int order = 0;
+    private final ComponentOrder order;
 
-    public Component() {
-        this.conflicts = new Class<?>[0];
+    public Component(ComponentOrder order) {
+        this.order = order;
     }
 
-    public Component(Class<?>... conflicts) {
-        this.conflicts = conflicts;
+    public Component() {
+        this.order = ComponentOrder.POST_DRAW;
     }
 
     /**
@@ -61,29 +54,28 @@ public abstract class Component implements Comparable<Component> {
     }
 
     /**
-     * Override to define conflicting component classes.
-     * If a component is conflicting with another, an exception will be thrown.
-     *
-     * @param otherComponent the other component to be tested
-     * @return true if and only if this component is conflicting with another
-     */
-    public boolean isConflictingWith(Class<? extends Component> otherComponent) {
-        return conflicts.length > 0 && Arrays.stream(conflicts).anyMatch(conflict -> conflict.isAssignableFrom(otherComponent));
-    }
-
-    /**
      * Shortcut to get the current position of the parent gameobject.
      *
      * @return the current position of the parent gameobject
      */
     protected Vector2f position() {
-        return gameObject.getReadOnlyTransform().getPosition();
+        return gameObject.getReadOnlyPosition();
+    }
+
+    /**
+     * Shortcut to overwrite the current position of the parent gameobject.
+     *
+     * @return the current position of the parent gameobject
+     */
+    protected void setPosition(Vector2f position) {
+        gameObject.getPositionData()[0] = position.x;
+        gameObject.getPositionData()[1] = position.y;
     }
 
     //this method is primarily used to keep all components in order to update them properly
     @Override
     public int compareTo(Component o) {
-        return order - o.order;
+        return order.o - o.order.o;
     }
 
     /**
@@ -92,14 +84,20 @@ public abstract class Component implements Comparable<Component> {
     public void remove() {
     }
 
-    /**
-     * Should be true, if this components will change the position of the gameobject somehow.
-     *
-     * @return false, if and only if the component will never modify the position of the gameobject in any way
-     * @see GameObject#positionBuffer()
-     */
-    public boolean transformingObject() {
-        return true;
+    public enum ComponentOrder {
+        PRE_CALC(0),
+        INPUT(5),
+        TRANSFORM(10),
+        POST_TRANSFORM(20),
+        COLLISION(30),
+        DRAW(40),
+        POST_DRAW(50);
+
+        private final int o;
+
+        ComponentOrder(int order) {
+            this.o = order;
+        }
     }
 
 }

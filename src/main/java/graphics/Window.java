@@ -42,6 +42,12 @@ public class Window {
 
         // Configure GLFW
         glfwDefaultWindowHints();
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
@@ -65,6 +71,12 @@ public class Window {
 
         // Configure GLFW
         glfwDefaultWindowHints();
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
@@ -116,18 +128,20 @@ public class Window {
         glfwMakeContextCurrent(glfwWindow);
 
         // Enable V-Sync
-//        glfwSwapInterval(1);
+        glfwSwapInterval(1);
 
         // Center the window
         glfwSetWindowPos(glfwWindow, (videoMode.width() - width) / 2, (videoMode.height() - height) / 2);
         GL.createCapabilities();
 
+        System.setProperty("java.awt.headless", "true");
+
     }
 
-    void getFPS() {
-        //TODO this wont properly display the FPS it will just count up the frames, there is no reset after a second yet
-        frameCount++;
-        glfwSetWindowTitle(glfwWindow, title + " @ " + Math.round((frameCount / (Engine.millisRunning() / 1000))) + " FPS");
+    public float getFPS() {
+        float fps = 1/Engine.deltaTime();
+        glfwSetWindowTitle(glfwWindow, title + " @ " + (int)fps + " FPS");
+        return fps;
     }
 
     public String getTitle() {
@@ -161,15 +175,15 @@ public class Window {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         double frameBeginTime = glfwGetTime();
-        double frameEndTime;
+        double frameEndTime = glfwGetTime();
 
         sceneManager.enable();
 
         while (!glfwWindowShouldClose(glfwWindow)) {
-
             frameEndTime = glfwGetTime();
             Engine.updateDeltaTime((float) (frameEndTime - frameBeginTime));
             frameBeginTime = frameEndTime;
+
             glfwPollEvents();
 
             if (!sleeping) {
@@ -180,10 +194,12 @@ public class Window {
                 PostProcessing.prepare();
                 sceneManager.postProcess(currentScene().renderer.fetchColorAttachment(0));
                 PostProcessing.finish();
+                sceneManager.updateUI();
                 sceneManager.debugRender();
             }
             glfwSwapBuffers(glfwWindow);
             getFPS();
+            frameEndTime = glfwGetTime();
         }
 
         currentScene().clean();

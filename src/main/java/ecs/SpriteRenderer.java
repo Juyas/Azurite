@@ -1,16 +1,12 @@
 package ecs;
 
 import graphics.Color;
-import graphics.RenderableComponent;
 import graphics.Sprite;
 import graphics.Texture;
-import graphics.renderer.DefaultRenderBatch;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
-import physics.Transform;
-import physics.TransformSensitive;
 import util.Assets;
-import util.Utils;
+import util.MathUtils;
 
 import static graphics.Color.WHITE;
 
@@ -23,15 +19,15 @@ import static graphics.Color.WHITE;
  * @author Gabe
  */
 
-public class SpriteRenderer extends RenderableComponent<DefaultRenderBatch> implements TransformSensitive {
-
-    public static final int ORDER = 100;
+public class SpriteRenderer extends Component {
 
     private Vector4f color = new Color(255, 100, 100, 255).toNormalizedVec4f();
 
     private Sprite sprite;
 
-    private Transform lastTransform;
+    private Vector2f lastLocation;
+    private Vector2f size;
+    private float rotation;
     private boolean isDirty; // Dirty flag, tells renderer to redraw if object components have changed
 
     /**
@@ -39,11 +35,12 @@ public class SpriteRenderer extends RenderableComponent<DefaultRenderBatch> impl
      *
      * @param color of type JOML Vector4f, range from 0-1
      */
-    public SpriteRenderer(Vector4f color) {
+    public SpriteRenderer(Vector4f color, Vector2f size) {
+        super(ComponentOrder.DRAW);
         this.setColor(color);
         this.sprite = new Sprite(null);
         this.isDirty = true;
-        this.order = ORDER;
+        this.size = size;
     }
 
     /**
@@ -51,12 +48,13 @@ public class SpriteRenderer extends RenderableComponent<DefaultRenderBatch> impl
      *
      * @param color of type Color, range from 0-255
      */
-    public SpriteRenderer(Color color) {
+    public SpriteRenderer(Color color, Vector2f size) {
+        super(ComponentOrder.DRAW);
         // Note that type Color is normalized below in setColor()
         this.setColor(color.toNormalizedVec4f());
         this.sprite = new Sprite(null);
         this.isDirty = true;
-        this.order = ORDER;
+        this.size = size;
     }
 
     /**
@@ -65,11 +63,12 @@ public class SpriteRenderer extends RenderableComponent<DefaultRenderBatch> impl
      *
      * @param sprite
      */
-    public SpriteRenderer(Sprite sprite) {
+    public SpriteRenderer(Sprite sprite, Vector2f size) {
+        super(ComponentOrder.DRAW);
         this.sprite = sprite;
         this.color = WHITE.toNormalizedVec4f();
         this.isDirty = true;
-        this.order = ORDER;
+        this.size = size;
     }
 
     /**
@@ -77,11 +76,12 @@ public class SpriteRenderer extends RenderableComponent<DefaultRenderBatch> impl
      *
      * @param path to the image (ie. "src/assets/images/pepper.png")
      */
-    public SpriteRenderer(String path) {
+    public SpriteRenderer(String path, Vector2f size) {
+        super(ComponentOrder.DRAW);
         this.sprite = new Sprite(Assets.getTexture(path));
         this.color = WHITE.toNormalizedVec4f();
         this.isDirty = true;
-        this.order = ORDER;
+        this.size = size;
     }
 
     /**
@@ -89,7 +89,8 @@ public class SpriteRenderer extends RenderableComponent<DefaultRenderBatch> impl
      */
     @Override
     public void start() {
-        this.lastTransform = gameObject.getReadOnlyTransform();
+        this.lastLocation = position();
+        isDirty = true;
     }
 
     /**
@@ -99,23 +100,8 @@ public class SpriteRenderer extends RenderableComponent<DefaultRenderBatch> impl
      */
     @Override
     public void update(float dt) {
-
-    }
-
-    @Override
-    public void update(Transform changedTransform) {
-        this.gameObject.getReadOnlyTransform().copy(this.lastTransform);
-        isDirty = true;
-    }
-
-    @Override
-    public boolean transformingObject() {
-        return false;
-    }
-
-    @Override
-    public void remove() {
-        getBatch().getRenderer().remove(this.gameObject);
+        if (!position().equals(this.lastLocation)) markDirty();
+        this.lastLocation = position();
     }
 
     /**
@@ -123,6 +109,14 @@ public class SpriteRenderer extends RenderableComponent<DefaultRenderBatch> impl
      */
     public Texture getTexture() {
         return sprite.getTexture();
+    }
+
+    public Vector2f getSize() {
+        return size;
+    }
+
+    public void setSize(Vector2f size) {
+        this.size = size;
     }
 
     /**
@@ -188,7 +182,7 @@ public class SpriteRenderer extends RenderableComponent<DefaultRenderBatch> impl
      * @param a alpha/opacity
      */
     public void setAlpha(float a) {
-        color.w = Utils.map(a, 0, 255, 0, 1);
+        color.w = MathUtils.map(a, 0, 255, 0, 1);
     }
 
     /**

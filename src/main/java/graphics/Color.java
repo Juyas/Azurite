@@ -2,10 +2,18 @@ package graphics;
 
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import util.Utils;
+import util.MathUtils;
 
 import java.util.Random;
 
+/**
+ * <h1>Azurite</h1>
+ * Represents a 4-channel color of either RGBA or HSLA type, with some helper functions
+ * to convert an RGBA to HSLA, or vice versa. This Class also contains some predefined
+ * colors, a random color generator, and some OpenGL-related helper functions.
+ *
+ * @see HSLColor
+ */
 public class Color {
 
     public static final int TYPE_RGBA = 0;
@@ -141,7 +149,7 @@ public class Color {
      * Utility function to Map a color value from range 0-255 to range 0-1
      */
     private float m(float p) {
-        return Utils.map(p, 0, 255, 0, 1);
+        return MathUtils.map(p, 0, 255, 0, 1);
     }
 
     /**
@@ -162,8 +170,8 @@ public class Color {
      * Turn a Color with normalised values to a color with values from 0-255
      */
     public Color fromNormalized() {
-        return new Color(Utils.map(r, 0, 1, 0, 255), Utils.map(g, 0, 1, 0, 255), Utils.map(b, 0, 1, 0, 255),
-                Utils.map(a, 0, 1, 0, 255));
+        return new Color(MathUtils.map(r, 0, 1, 0, 255), MathUtils.map(g, 0, 1, 0, 255), MathUtils.map(b, 0, 1, 0, 255),
+                MathUtils.map(a, 0, 1, 0, 255));
     }
 
     /**

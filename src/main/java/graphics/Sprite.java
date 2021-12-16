@@ -5,12 +5,11 @@ import org.joml.Vector2f;
 /**
  * Contains the texture and UV coordinates used by openGL to render an image
  */
-
 public class Sprite {
     /**
      * The texture for this sprite
      */
-    private Texture texture;
+    protected Texture texture;
 
     /**
      * This sprite's texture coords
