@@ -1,19 +1,19 @@
 package scene;
 
 import ecs.GameObject;
-import ui.Element;
-import ui.RenderableElement;
-import ui.Text;
 import graphics.Camera;
 import graphics.Texture;
+import graphics.postprocess.ForwardToTexture;
+import graphics.postprocess.PostProcessStep;
 import graphics.renderer.*;
+import input.InputState;
 import input.Keyboard;
 import org.lwjgl.glfw.GLFW;
 import physics.collision.Collider;
-import graphics.postprocess.ForwardToTexture;
-import graphics.postprocess.PostProcessStep;
+import ui.Element;
+import ui.RenderableElement;
+import ui.Text;
 import util.Engine;
-import util.Logger;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -70,10 +70,11 @@ import java.util.List;
  *     }
  * }
  * </pre>
- * @see SceneManager
+ *
  * @author Asher Haun
  * @author Juyas
  * @author VoxelRifts
+ * @see SceneManager
  */
 public abstract class Scene {
 
@@ -132,7 +133,7 @@ public abstract class Scene {
      * This method is called every frame, and can be used to update objects.
      */
     public void update() {
-        if (Keyboard.getKeyDown(GLFW.GLFW_KEY_GRAVE_ACCENT)) {
+        if (Keyboard.is(GLFW.GLFW_KEY_GRAVE_ACCENT, InputState.RELEASED)) {
             debugMode = !debugMode;
         }
     }
@@ -209,13 +210,13 @@ public abstract class Scene {
     /**
      * Loops through all the gameObjects in the scene and calls their update methods.
      */
-    public void updateGameObjects () {
+    public void updateGameObjects() {
         for (GameObject go : gameObjects) {
             go.update(Engine.deltaTime());
         }
     }
 
-    public void updateUI () {
+    public void updateUI() {
         // Logger.logInfo("There are " + texts.size() + " text elements.");
         for (Element e : uiElements) {
             e.update();
@@ -249,7 +250,7 @@ public abstract class Scene {
     /**
      * Initialize all renderers
      */
-    public void initRenderers () {
+    public void initRenderers() {
         debugRenderer.init();
         lightmapRenderer.init();
         renderer.init();
@@ -258,7 +259,7 @@ public abstract class Scene {
         uiRenderer.init();
     }
 
-    public final void startUi () {
+    public final void startUi() {
         textRenderer.init();
 
         for (Element e : uiElements) {
@@ -268,14 +269,14 @@ public abstract class Scene {
         }
     }
 
-    public void render () {
+    public void render() {
         rendererRegistry.forEach(Renderer::render);
         lightmapRenderer.render();
         lightmapRenderer.bindLightmap();
         renderer.render();
     }
 
-    public void debugRender () {
+    public void debugRender() {
         if (debugMode) this.debugRenderer.render();
     }
 
@@ -296,11 +297,11 @@ public abstract class Scene {
         rendererRegistry.forEach(Renderer::clean);
     }
 
-    public void addText (Text t) {
+    public void addText(Text t) {
         texts.add(t);
     }
 
-    public void addUIElement (Element e) {
+    public void addUIElement(Element e) {
         uiElements.add(e);
 
         if (e instanceof RenderableElement) {
