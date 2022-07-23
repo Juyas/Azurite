@@ -32,6 +32,7 @@ public class Keyboard {
             Logger.logFatal("Unknown keyboard scancode: " + scancode);
             return;
         }
+        System.out.println(Key.RAW_KEYMAPPING.get(scancode) + " - " + scancode);
         keyStates[scancode] = (byte) (InputMod.option(mods) | InputState.option(action));
     }
 
