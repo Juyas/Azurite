@@ -3,21 +3,28 @@ package tiles;
 import ecs.GameObject;
 import ecs.PolygonCollider;
 import ecs.SpriteRenderer;
+import graphics.Spritesheet;
 import org.joml.Vector2f;
 import physics.collision.Shapes;
 import scene.Scene;
 import util.MathUtils;
 
 /**
- * <h1>Azurite</h1>
+ * 
  * An example class of a platformer stage and it's tilemap. Eventually I think this should
  * be expanded to a more general API, maybe even with a {@link Scene} dedicated to an
  * in-engine way of constructing them (Mario Maker flavoured Azurite?), but that's likely
  * a future plan; I, the mortal JavaDocumentator, don't have insight into the minds of
  * the owners of this game engine (go ask Asher, idk).
- *
+ * 
+ * lol see {@link Tilesystem}, this is now deprectated :D 
+ * -Asher
+ * 
  * @see Scene
+ * @see Tilesystem
  */
+
+@Deprecated
 public class TilesystemSideScroll {
     Spritesheet sheet;
     GameObject[][] gameObjects = new GameObject[0][0];

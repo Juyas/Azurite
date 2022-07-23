@@ -19,7 +19,7 @@ import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.*;
 
 /**
- * <h1>Azurite</h1>
+ * 
  * <p>
  *     A render batch is a collection of elements that are "batched" together into
  *     a single object. This objects conglomerates the vertex data associated with
@@ -148,7 +148,6 @@ public class RenderBatch implements Comparable<RenderBatch> {
         data = new float[maxBatchSize * primitive.vertexCount * vertexCount];
 
         this.primitiveVertices = new float[vertexCount * primitive.vertexCount];
-        System.out.println("Created Renderbatch: " + num++);
     }
 
     /**

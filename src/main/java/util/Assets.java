@@ -1,16 +1,25 @@
-package util; 
+package util;
 
+import audio.AudioBuffer;
 import graphics.Shader;
 import graphics.Texture;
-import tiles.Spritesheet;
+import graphics.Spritesheet;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.Scanner;
 
+/** 
+ * The Assets class contains methods to assist in loading common resources used by the engine from the filesystem as well as HashMaps to keep track of loaded resources. 
+ * If the same path is loaded again via the Assets class, it will call the item up from the hashmap rather than reload it.
+ */
 public class Assets {
-    private static HashMap<String, Shader> shaders = new HashMap<>();
-    private static HashMap<String, Texture> textures = new HashMap<>();
-    private static HashMap<String, Spritesheet> spritesheets = new HashMap<>();
+	private static HashMap<String, Shader> shaders = new HashMap<>();
+    private static HashMap<String, String> dataFiles = new HashMap<>();
+	private static HashMap<String, Texture> textures = new HashMap<>();
+	private static HashMap<String, AudioBuffer> audioBuffers = new HashMap<>();
+	private static HashMap<String, Spritesheet> spritesheets = new HashMap<>();
 
     /**
      * Loads a shader from the filesystem, compiles it, then returns type Shader.
@@ -30,6 +39,36 @@ public class Assets {
     }
 
     /**
+     * Loads a text file from the filesystem and returns it in a String
+     *
+     * @param path to data file
+     * @return returns type String
+     */
+    public static String getDataFile (String path) {
+        String data = "";
+        try {
+            File file = new File(path);
+
+            if (dataFiles.containsKey(file.getAbsolutePath())) {
+                return dataFiles.get(file.getAbsolutePath());
+            }
+
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                data += line + "\n";
+            }
+            scanner.close();
+
+            dataFiles.put(file.getAbsolutePath(), data);
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+        return data;
+    }
+
+    /**
      * Loads a image from the filesystem, and returns a Texture.
      *
      * @param path to Texture resource (usually a .png file)
@@ -45,18 +84,27 @@ public class Assets {
         return texture;
     }
 
-    /**
-     * Adds a filepath and spritesheet to the Asset class's spritesheet hashmap. (private)
-     *
-     * @param path        to Texture resource (usually a .png file)
-     * @param spritesheet object
-     */
-    private static void addSpritesheet(String path, Spritesheet spritesheet) {
-        File file = new File(path);
-        if (!Assets.spritesheets.containsKey(file.getAbsolutePath())) {
-            Assets.spritesheets.put(file.getAbsolutePath(), spritesheet);
-        }
-    }
+    public static AudioBuffer getAudioBuffer(String path) {
+		File file = new File(path);
+		if (audioBuffers.containsKey(file.getAbsolutePath())) {
+			return audioBuffers.get(file.getAbsolutePath());
+		}
+		AudioBuffer audioBuffer = new AudioBuffer(path);
+		audioBuffers.put(file.getAbsolutePath(), audioBuffer);
+		return audioBuffer;
+	}
+
+	/**
+	 * Adds a filepath and spritesheet to the Asset class's spritesheet hashmap. (private)
+	 ** @param path to Texture resource (usually a .png file)
+	 * @param spritesheet object
+	 */
+	private static void addSpritesheet(String path, Spritesheet spritesheet) {
+		File file = new File(path);
+		if (!Assets.spritesheets.containsKey(file.getAbsolutePath())) {
+			Assets.spritesheets.put(file.getAbsolutePath(), spritesheet);
+		}
+	}
 
 
     private static Spritesheet getSpritesheet(String path) {

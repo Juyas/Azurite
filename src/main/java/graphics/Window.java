@@ -1,20 +1,26 @@
 package graphics;
 
-
+import audio.AudioMaster;
 import event.EventData;
 import event.Events;
-import input_old.Keyboard_old;
-import input_old.Mouse_old;
+import input.Keyboard;
+import input.Mouse;
+import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import postprocess.PostProcessing;
+import graphics.postprocess.PostProcessing;
 import scene.Scene;
 import scene.SceneManager;
 import util.Engine;
 
+import java.nio.ByteBuffer;
+
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
+/**
+ * The Window class handles setup of GLFW
+ */
 public class Window {
 
     private static long glfwWindow;
@@ -28,14 +34,18 @@ public class Window {
     private String title;
     private boolean sleeping = false;
 
+    public static Window instance = null;
+
     public Window(int pwidth, int pheight, String ptitle, boolean fullscreen, float minSceneLighting, boolean recalculateProjectionOnResize) {
+        instance = this;
+
         videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         width = pwidth;
         height = pheight;
         title = ptitle;
         this.recalculateProjectionOnResize = recalculateProjectionOnResize;
 
-        //create the sceneManager to be able to set a scene
+        // create the sceneManager to be able to set a scene
         sceneManager = new SceneManager();
 
         sceneManager.setMinSceneLight(minSceneLighting);
@@ -50,6 +60,8 @@ public class Window {
 
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
 
         if (!fullscreen)
             initWindow(width, height, title, 0);
@@ -58,13 +70,15 @@ public class Window {
     }
 
     public Window(String ptitle, float minSceneLighting, boolean recalculateProjectionOnResize) {
+        instance = this;
+
         videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         width = videoMode.width();
         height = videoMode.height();
         title = ptitle;
         this.recalculateProjectionOnResize = recalculateProjectionOnResize;
 
-        //create the sceneManager to be able to set a scene
+        // create the sceneManager to be able to set a scene
         sceneManager = new SceneManager();
 
         sceneManager.setMinSceneLight(minSceneLighting);
@@ -80,10 +94,13 @@ public class Window {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
+        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
+
         initWindow(width, height, title, glfwGetPrimaryMonitor());
     }
 
-    public Window(int pwidth, int pheight, String ptitle, float minSceneLighting, boolean recalculateProjectionOnResize) {
+    public Window(int pwidth, int pheight, String ptitle, float minSceneLighting,
+            boolean recalculateProjectionOnResize) {
         this(pwidth, pheight, ptitle, false, minSceneLighting, recalculateProjectionOnResize);
     }
 
@@ -106,8 +123,18 @@ public class Window {
         if (glfwWindow == 0)
             throw new IllegalStateException("[FATAL] Failed to create window.");
 
+        // Make the OpenGL context current
+        glfwMakeContextCurrent(glfwWindow);
+
+        // Enable V-Sync
+        glfwSwapInterval(1);
+
+        // Center the window
+        glfwSetWindowPos(glfwWindow, (videoMode.width() - width) / 2, (videoMode.height() - height) / 2);
+        GL.createCapabilities();
+
         // Set up callback
-        glfwSetWindowSizeCallback(glfwWindow, (w, newWidth, newHeight) -> {
+        glfwSetFramebufferSizeCallback(glfwWindow, (w, newWidth, newHeight) -> {
             if (newWidth == 0 || newHeight == 0) {
                 sleeping = true;
                 return;
@@ -119,28 +146,17 @@ public class Window {
             if (recalculateProjectionOnResize && currentScene().camera() != null)
                 currentScene().camera().adjustProjection();
             Events.windowResizeEvent.onEvent(new EventData.WindowResizeEventData(newWidth, newHeight));
+
         });
 
-        Mouse_old.setupCallbacks();
-        Keyboard_old.setupCallbacks();
-
-        // Make the OpenGL context current
-        glfwMakeContextCurrent(glfwWindow);
-
-        // Enable V-Sync
-        glfwSwapInterval(1);
-
-        // Center the window
-        glfwSetWindowPos(glfwWindow, (videoMode.width() - width) / 2, (videoMode.height() - height) / 2);
-        GL.createCapabilities();
-
-        System.setProperty("java.awt.headless", "true");
+        Mouse.setupCallbacks();
+        Keyboard.setupCallbacks();
 
     }
 
     public float getFPS() {
-        float fps = 1/Engine.deltaTime();
-        glfwSetWindowTitle(glfwWindow, title + " @ " + (int)fps + " FPS");
+        float fps = 1 / Engine.deltaTime();
+        glfwSetWindowTitle(glfwWindow, title + " @ " + (int) fps + " FPS");
         return fps;
     }
 
@@ -186,8 +202,8 @@ public class Window {
 
             glfwPollEvents();
 
-            if (!sleeping) {
-                Mouse_old.update();
+            if (!sleeping && currentScene().isActive()) {
+                Mouse.update();
                 sceneManager.update();
                 sceneManager.updateGameObjects();
                 sceneManager.render();
@@ -205,6 +221,7 @@ public class Window {
         currentScene().clean();
         // Delete all framebuffers
         Framebuffer.clean();
+        AudioMaster.get().clean();
 
         glfwDestroyWindow(glfwWindow);
         glfwTerminate();
@@ -217,5 +234,21 @@ public class Window {
 
     public SceneManager getSceneManager() {
         return sceneManager;
+    }
+
+    public static Camera getCamera() {
+        return instance.currentScene().camera();
+    }
+
+    public void setIcon(String path) {
+        Texture icon = new Texture(path);
+        GLFWImage image = GLFWImage.malloc();
+        GLFWImage.Buffer buffer = GLFWImage.malloc(1);
+        ByteBuffer iconBuffer = icon.loadImageInByteBuffer(path);
+        image.set(icon.getWidth(), icon.getHeight(), iconBuffer);
+        buffer.put(0, image);
+        glfwSetWindowIcon(glfwWindow, buffer);
+        buffer.free();
+        image.free();
     }
 }

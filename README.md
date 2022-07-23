@@ -43,6 +43,18 @@
 * Modern OpenGL through the LWJGL 3 library for fast GPU rendering.
 * Entity Component System
 
+| Name | Support | Render Context |
+|------|:------:|:--------------:|
+| Windows 		| Working 	 | OpenGL 330 |
+| macOS 		| Working 	 | OpenGL 3.3 Core |
+| Debian / Ubuntu 	| Working	 | OpenGL 330 |
+| Arch / Manjaro 	| Working 	 | OpenGL 330 |
+| Other Distros 	| Planned 	 | OpenGL 330 |
+| FreeBSD		| Planned	 | - |
+| Android	 	| Planned 	 | OpenGL ES |
+| IOS		 	| Not Planned 	 | - |
+
+
 ### Built With
 * [LWJGL 3](https://www.lwjgl.org/)
 
@@ -52,11 +64,12 @@
 public class Main extends Scene {
 	public static void main(String[] args) {
 		Engine.init(1920, 1080, "Azurite Engine Demo In Comment", 1.0f);
-		Engine.scenes().switchScene(new Main(), true);
+		Engine.scenes().switchScene(new Main());
 		Engine.showWindow();
 	}
 
 	public void awake() {
+		Graphics.setDefaultBackground(Color.BLACK);
 		camera = new Camera();
 		...
 	}
@@ -75,15 +88,16 @@ public class Main extends Scene {
 
 	public static void main(String[] args) {
 		Engine.init(1920, 1080, "Azurite Engine Demo In Comment", 1.0f);
-		Engine.scenes().switchScene(new Main(), true);
+		Engine.scenes().switchScene(new Main());
 		Engine.showWindow();
 	}
 
 	public void awake() {
+		Graphics.setDefaultBackground(Color.BLACK);
 		camera = new Camera();
 
 		player = new GameObject();
-		s = new Sprite
+		s = new Sprite("src/assets/sprite.png");
 		player.addComponent(new SpriteRenderer(s, new Vector2f(100)));
 	}
 
@@ -98,9 +112,7 @@ public class Main extends Scene {
 ### Prerequisites
 * OpenGL capable graphics card (minimum `core 330`)
 * OpenGL capable graphics driver
-  * Linux nouveau drivers for nvidia cards do not currently work, you will have to install proprietary drivers.
-  * FOSS AMD Drivers for linux do work.
-* Java 1.8
+* Java 11
   
 ### Project Setup
 To begin contributing, create a fork of this repository.

@@ -1,5 +1,6 @@
 package util; 
 
+import audio.AudioMaster;
 import graphics.Window;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import scene.SceneManager;
@@ -7,11 +8,11 @@ import util.safety.Preconditions;
 
 import static org.lwjgl.glfw.GLFW.glfwInit;
 
+/**
+ * The Engine class initializes the Window and the game loop.
+ * It can also be used to access some globally used classes like the scene manager and Window.
+ */
 public final class Engine {
-
-    /**
-     * The Engine class initializes GLFW and the game loop.
-     */
 
     private static final Engine instance = new Engine();
 
@@ -58,8 +59,10 @@ public final class Engine {
         return window().getSceneManager();
     }
 
-    //internal method called before any init
+    // Internal method called before any init
     private static void preInit() {
+
+        System.setProperty("java.awt.headless", "true");
 
         //ensure that the Engine is running on main thread
         Preconditions.ensureMainThread("engine initialization");
@@ -68,6 +71,8 @@ public final class Engine {
 
         if (!glfwInit())
             throw new IllegalStateException("[FATAL] Failed to initialize GLFW.");
+      
+        AudioMaster.get();
     }
 
     /**
@@ -80,7 +85,7 @@ public final class Engine {
      */
     public static void init(int windowWidth, int windowHeight, String windowTitle, float minSceneLighting) {
         preInit();
-        getInstance().window = new Window(windowWidth, windowHeight, windowTitle, minSceneLighting, false);
+        getInstance().window = new Window(windowWidth, windowHeight, windowTitle, minSceneLighting, true);
     }
 
     /**
@@ -135,5 +140,4 @@ public final class Engine {
     public float getDeltaTime() {
         return deltaTime;
     }
-
 }
