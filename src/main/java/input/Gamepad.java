@@ -1,5 +1,7 @@
 package input;
 
+import util.Log;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -31,7 +33,7 @@ public class Gamepad {
         try {
             return glfwGetJoystickButtons(controllerId).get(button) == 1;
         } catch (NullPointerException e) {
-            System.out.println("[ERROR] No Controller Attached on " + controllerId + ".");
+            Log.fatal("no controller attached on " + controllerId + ".", 1);
             return false;
         }
     }
@@ -49,7 +51,7 @@ public class Gamepad {
             }
             return x;
         } catch (NullPointerException e) {
-            System.out.println("[ERROR] No Controller Attached on " + controllerId + ".");
+            Log.fatal("no controller attached on " + controllerId + ".", 1);
             return 0;
         }
     }

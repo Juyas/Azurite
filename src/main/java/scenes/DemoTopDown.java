@@ -13,6 +13,7 @@ import scene.Scene;
 import tiles.Tilesystem;
 import util.Assets;
 import util.Engine;
+import util.Log;
 import util.MathUtils;
 
 import java.util.Arrays;
@@ -33,6 +34,7 @@ public class DemoTopDown extends Scene {
     boolean flip = true;
 
     public static void main(String[] args) {
+        Log.setLogLevel(Log.ALL);
         Engine.init(1280, 720, "Azurite Engine Demo 1", 0.01f, true);
         Engine.scenes().switchScene(new DemoTopDown());
 //        Engine.window().setIcon("src/assets/images/icon.png");

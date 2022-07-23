@@ -14,6 +14,7 @@ import ui.Element;
 import ui.RenderableElement;
 import ui.Text;
 import util.Engine;
+import util.Log;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -118,6 +119,7 @@ public abstract class Scene {
      */
     public void activate() {
         this.active = true;
+        Log.debug("scene " + sceneId + " activated");
     }
 
     /**
@@ -127,6 +129,7 @@ public abstract class Scene {
      */
     public void deactivate() {
         this.active = false;
+        Log.debug("scene " + sceneId + " deactivated");
     }
 
     /**
