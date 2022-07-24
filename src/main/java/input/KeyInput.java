@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class KeyInput {
 
     private int scancode;
-    private String virtual_key;
+    private Key virtual_key;
     private String name;
     private HashMap<Byte, String> resultMap;
 
@@ -28,7 +28,7 @@ public class KeyInput {
         return scancode;
     }
 
-    public String getVirtual_key() {
+    public Key getVirtualKey() {
         return virtual_key;
     }
 

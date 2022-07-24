@@ -3,6 +3,7 @@ package scenes;
 import ecs.GameObject;
 import ecs.SpriteRenderer;
 import graphics.*;
+import input.KeyBindings;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 import scene.Scene;
@@ -28,6 +29,7 @@ public class UIRenderingDemo extends Scene {
         Log.setLogLevel(Log.ALL);
         Engine.init(900, 600, "Azurite UI Rendering Demo", 1, true);
         Engine.scenes().switchScene(new UIRenderingDemo());
+        KeyBindings parse = KeyBindings.parse("T:/de_DE.xml");
         Engine.showWindow();
     }
 

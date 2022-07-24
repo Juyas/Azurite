@@ -3,7 +3,7 @@ package input;
 import event.EventData;
 import event.Events;
 import graphics.Window;
-import util.Logger;
+import util.Log;
 
 import java.util.Arrays;
 
@@ -29,7 +29,7 @@ public class Keyboard {
 
     public static void onKeyChange(long window, int glfwkey, int scancode, int action, int mods) {
         if (scancode > 400) {
-            Logger.logFatal("Unknown keyboard scancode: " + scancode);
+            Log.fatal("Unknown keyboard scancode: " + scancode);
             return;
         }
         System.out.println(Key.RAW_KEYMAPPING.get(scancode) + " - " + scancode);
@@ -43,7 +43,7 @@ public class Keyboard {
 
     public static byte getKeyState(int scancode) {
         if (scancode > 400) {
-            Logger.logFatal("Unknown keyboard scancode: " + scancode);
+            Log.fatal("Unknown keyboard scancode: " + scancode);
             return -1;
         }
         return keyStates[scancode];

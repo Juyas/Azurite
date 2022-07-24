@@ -1,5 +1,11 @@
 package input;
 
+import io.FileFormats;
+import io.bin.BinaryIO;
+import io.xml.XMLElement;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -44,9 +50,15 @@ public class KeyBindings {
         this.mapping = mapping;
     }
 
-    public static KeyBindings parse(String input) {
-        //TODO: wait for XML parser to arrive
-        return new KeyBindings();
+    public static KeyBindings parse(String path) {
+        XMLElement xmlElement;
+        try {
+            xmlElement = FileFormats.XML.parse(BinaryIO.readData(new File(path)).array());
+            System.out.println(xmlElement);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     public boolean learn(Key input, KeyInput output, boolean ifUnknown) {
