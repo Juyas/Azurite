@@ -6,6 +6,8 @@ import java.util.HashMap;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
+ * Represents the state of a key on the keyboard and can be encoded into a byte.
+ *
  * @version 12.07.2021
  * @since 21.04.2021
  */

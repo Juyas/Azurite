@@ -12,6 +12,8 @@ import static org.lwjgl.glfw.GLFW.glfwSetCharCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
 
 /**
+ * This class is used to react and listen to keyboard events by the user.
+ *
  * @version 09.07.2021
  * @since 09.07.2021
  */

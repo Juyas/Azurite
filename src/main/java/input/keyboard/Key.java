@@ -1,6 +1,8 @@
 package input.keyboard;
 
 /**
+ * A known set of virtual keys based on keyboard layout files from <a href="https://kbdlayout.info">kbdlayout.info</a>
+ *
  * @version 12.07.2021
  * @since 12.07.2021
  */

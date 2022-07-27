@@ -3,6 +3,9 @@ package input.keyboard;
 import java.util.Map;
 
 /**
+ * Represents a table containing information about dead keys and their effects.
+ * Dead keys are keys not having immediate impact when pressed and effect the next key pressed.
+ *
  * @version 27.07.2022
  * @since 27.07.2022
  */
