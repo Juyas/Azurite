@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * For detailed information, view <a href="https://kbdlayout.info">kbdlayout.info</a>
+ * For detailed information, view <a href="https://kbdlayout.info">kbdlayout.info</a> and get your layout there.
  *
  * @version 11.07.2021
  * @since 11.07.2021
@@ -41,13 +41,11 @@ public class KeyboardLayout {
     private boolean changesDirectionality;
 
     private final HashMap<Integer, KeyInput> mapping;
+    private final HashMap<Key, Set<Integer>> reverse_mapping;
 
     public KeyboardLayout() {
-        this(new HashMap<>());
-    }
-
-    public KeyboardLayout(HashMap<Integer, KeyInput> mapping) {
-        this.mapping = mapping;
+        this.mapping = new HashMap<>();
+        this.reverse_mapping = new HashMap<>();
     }
 
     public boolean isChangesDirectionality() {
@@ -72,6 +70,10 @@ public class KeyboardLayout {
 
     public HashMap<Integer, KeyInput> getMapping() {
         return mapping;
+    }
+
+    public HashMap<Key, Set<Integer>> getReverse_mapping() {
+        return reverse_mapping;
     }
 
     //------------------------------ PARSING --------------------------------------
@@ -100,7 +102,12 @@ public class KeyboardLayout {
             for (XMLElement element : xmlElement.getChildren()) {
                 //read PK element
                 KeyInput keyInput = readPK(element);
-                if (keyInput != null) bindings.mapping.put(keyInput.getScancode(), keyInput);
+                if (keyInput != null) {
+                    bindings.mapping.put(keyInput.getScancode(), keyInput);
+                    if (!bindings.reverse_mapping.containsKey(keyInput.getVirtualKey()))
+                        bindings.reverse_mapping.put(keyInput.getVirtualKey(), new HashSet<>());
+                    bindings.reverse_mapping.get(keyInput.getVirtualKey()).add(keyInput.getScancode());
+                }
             }
             return bindings;
         } catch (IOException e) {

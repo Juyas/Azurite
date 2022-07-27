@@ -36,4 +36,12 @@ public class KeyInput {
         return virtualKey;
     }
 
+    @Override
+    public String toString() {
+        return "KeyInput{" +
+                "sc=" + scancode +
+                ",vk=" + virtualKey +
+                ",name='" + name + '\'' +
+                '}';
+    }
 }

@@ -2,6 +2,7 @@ package util;
 
 import audio.AudioMaster;
 import graphics.Window;
+import input.keyboard.Keyboard;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import scene.SceneManager;
 import util.safety.Preconditions;
@@ -104,6 +105,8 @@ public final class Engine {
         }
 
         AudioMaster.get();
+
+        Keyboard.setKeyboardLayout(Assets.getKeyboardLayout("src/assets/locale/keyboard/en_US_inter.xml"));
 
         Log.info("engine pre init complete");
     }

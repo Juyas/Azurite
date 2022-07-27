@@ -136,7 +136,7 @@ public abstract class Scene {
      * This method is called every frame, and can be used to update objects.
      */
     public void update() {
-        if (Keyboard.is(GLFW.GLFW_KEY_GRAVE_ACCENT, InputState.RELEASED)) {
+        if (Keyboard.isAll(GLFW.GLFW_KEY_GRAVE_ACCENT, InputState.RELEASED)) {
             debugMode = !debugMode;
         }
     }

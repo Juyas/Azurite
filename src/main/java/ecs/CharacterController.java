@@ -1,7 +1,12 @@
 package ecs;
 
+import input.keyboard.Key;
+import input.keyboard.Keyboard;
 import org.joml.Vector2f;
 import physics.force.Force;
+
+import static input.keyboard.InputState.HOLD;
+import static input.keyboard.InputState.PRESSED;
 
 /**
  * Character controllers built to support the Top down and Side scroller Demo scenes.
@@ -82,22 +87,18 @@ public class CharacterController extends Component {
     }
 
     private static boolean up() {
-        //return Keyboard.is(Key.KEY_UP.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_W.scancode()[0], InputState.PRESSED);
-        return false;
+        return Keyboard.isAny(Key.VK_UP, PRESSED, HOLD) || Keyboard.isAny(Key.VK_W, PRESSED, HOLD);
     }
 
     private static boolean down() {
-        //return Keyboard.is(Key.KEY_DOWN.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_S.scancode()[0], InputState.PRESSED);
-        return false;
+        return Keyboard.isAny(Key.VK_DOWN, PRESSED, HOLD) || Keyboard.isAny(Key.VK_S, PRESSED, HOLD);
     }
 
     private static boolean left() {
-        //return Keyboard.is(Key.KEY_LEFT.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_A.scancode()[0], InputState.PRESSED);
-        return false;
+        return Keyboard.isAny(Key.VK_LEFT, PRESSED, HOLD) || Keyboard.isAny(Key.VK_A, PRESSED, HOLD);
     }
 
     private static boolean right() {
-        //return Keyboard.is(Key.KEY_RIGHT.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_D.scancode()[0], InputState.PRESSED);
-        return false;
+        return Keyboard.isAny(Key.VK_RIGHT, PRESSED, HOLD) || Keyboard.isAny(Key.VK_D, PRESSED, HOLD);
     }
 }
