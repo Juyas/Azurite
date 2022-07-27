@@ -10,9 +10,6 @@ import java.util.Arrays;
 import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
 
 /**
- * <h1>Azurite</h1>
- *
- * @author Juyas
  * @version 09.07.2021
  * @since 09.07.2021
  */

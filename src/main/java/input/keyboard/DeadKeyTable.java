@@ -3,17 +3,16 @@ package input.keyboard;
 import java.util.Map;
 
 /**
- * @author Juyas
  * @version 27.07.2022
  * @since 27.07.2022
  */
 public class DeadKeyTable {
 
-    private String name;
-    private char accent;
-    private Map<Character, Character> mapping;
+    private final String name;
+    private final String accent;
+    private final Map<String, String> mapping;
 
-    public DeadKeyTable(String name, char accent, Map<Character, Character> mapping) {
+    public DeadKeyTable(String name, String accent, Map<String, String> mapping) {
         this.name = name;
         this.accent = accent;
         this.mapping = mapping;
@@ -23,11 +22,11 @@ public class DeadKeyTable {
         return name;
     }
 
-    public char getAccent() {
+    public String getAccent() {
         return accent;
     }
 
-    public Map<Character, Character> getMapping() {
+    public Map<String, String> getMapping() {
         return mapping;
     }
 }

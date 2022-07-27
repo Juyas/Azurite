@@ -13,14 +13,12 @@ import ui.Text;
 import ui.element.Button;
 import ui.element.CheckBox;
 import ui.element.CheckBoxGroup;
-import util.Assets;
 import util.Engine;
 import util.Log;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static graphics.Graphics.setDefaultBackground;
 
@@ -30,24 +28,7 @@ public class UIRenderingDemo extends Scene {
         Log.setLogLevel(Log.ALL);
         Engine.init(900, 600, "Azurite UI Rendering Demo", 1, true);
         Engine.scenes().switchScene(new UIRenderingDemo());
-        //KeyBindings parse = KeyBindings.parse(Locale.GERMAN, "T:/de_DE.xml");
-        run();
         Engine.showWindow();
-    }
-
-    private static void run() {
-        String s = new String(Assets.getDataFile("T:/de_DE.xml").array());
-        Set<String> keys = new HashSet<>();
-        Scanner scanner = new Scanner(s);
-        String pattern = "VK_[^\"]*";
-        Matcher matcher = Pattern.compile(pattern).matcher(s);
-        matcher.results().forEach(res -> keys.add(s.substring(res.start(), res.end())));
-        List<String> list = new ArrayList<>(keys);
-        Collections.sort(list);
-        for (String k : list) {
-            if (!k.contains(" "))
-                System.out.println(k + ",");
-        }
     }
 
     GameObject background;

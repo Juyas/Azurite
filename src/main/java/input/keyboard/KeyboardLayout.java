@@ -11,10 +11,12 @@ import java.io.IOException;
 import java.util.*;
 
 /**
+ * For detailed information, view <a href="https://kbdlayout.info">kbdlayout.info</a>
+ *
  * @version 11.07.2021
  * @since 11.07.2021
  */
-public class KeyBindings {
+public class KeyboardLayout {
 
     /**
      * The locale that this binding might be used in.
@@ -40,16 +42,42 @@ public class KeyBindings {
 
     private final HashMap<Integer, KeyInput> mapping;
 
-    public KeyBindings() {
+    public KeyboardLayout() {
         this(new HashMap<>());
     }
 
-    public KeyBindings(HashMap<Integer, KeyInput> mapping) {
+    public KeyboardLayout(HashMap<Integer, KeyInput> mapping) {
         this.mapping = mapping;
     }
 
-    public static KeyBindings parse(Locale locale, String path) {
-        KeyBindings bindings = new KeyBindings();
+    public boolean isChangesDirectionality() {
+        return changesDirectionality;
+    }
+
+    public boolean isRightAltIsaltGr() {
+        return rightAltIsaltGr;
+    }
+
+    public boolean isShiftCancelsCapsLock() {
+        return shiftCancelsCapsLock;
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public String getLayoutDescriptor() {
+        return layoutDescriptor;
+    }
+
+    public HashMap<Integer, KeyInput> getMapping() {
+        return mapping;
+    }
+
+    //------------------------------ PARSING --------------------------------------
+
+    public static KeyboardLayout parse(Locale locale, String path) {
+        KeyboardLayout bindings = new KeyboardLayout();
         bindings.locale = locale;
         XMLElement xmlElement;
         try {
@@ -60,30 +88,20 @@ public class KeyBindings {
             }
             //using the name without extension as the layout descriptor
             bindings.layoutDescriptor = file.getName().substring(0, file.getName().length() - 4);
-            xmlElement.getAttributes().forEach((key, value) -> {
-                switch (key) {
-                    case "RightAltIsAltGr":
-                        bindings.rightAltIsaltGr = Boolean.getBoolean(value);
-                        break;
-                    case "ShiftCancelsCapsLock":
-                        bindings.shiftCancelsCapsLock = Boolean.getBoolean(value);
-                        break;
-                    case "ChangesDirectionality":
-                        bindings.changesDirectionality = Boolean.getBoolean(value);
-                        break;
-                }
-            });
+            bindings.rightAltIsaltGr = Boolean.parseBoolean(xmlElement.getAttributes().getOrDefault("RightAltIsAltGr", "true"));
+            bindings.shiftCancelsCapsLock = Boolean.parseBoolean(xmlElement.getAttributes().getOrDefault("ShiftCancelsCapsLock", "false"));
+            bindings.changesDirectionality = Boolean.parseBoolean(xmlElement.getAttributes().getOrDefault("ChangesDirectionality", "false"));
             if (xmlElement.getChildren().size() != 1 || !xmlElement.getChildren().get(0).getTag().equals("PhysicalKeys")) {
-                throw badSyntax("Keybinding xml has to have only a PhysicalKeys tag at second level");
+                throw badSyntax("Keybinding xml has to have only a PhysicalKeys tag at second level -\n" + xmlElement);
             }
             //make PhysicalKeys the next parent containing all
             xmlElement = xmlElement.getChildren().get(0);
             //load each element
             for (XMLElement element : xmlElement.getChildren()) {
                 KeyInput keyInput = readPK(element);
-                if (keyInput != null)
-                    bindings.mapping.put(keyInput.getScancode(), keyInput);
+                if (keyInput != null) bindings.mapping.put(keyInput.getScancode(), keyInput);
             }
+            return bindings;
         } catch (IOException e) {
             Log.fatal("Loading keybindings failed: \"" + path + "\"");
         }
@@ -115,10 +133,9 @@ public class KeyBindings {
         //empty body allowed for direct bindings
         if (pkElement.getChildren() != null) {
             for (XMLElement result : pkElement.getChildren()) {
-                if (!result.getTag().equals("Result"))
-                    throw badSyntax("PK elements should only contain Result nodes");
+                if (!result.getTag().equals("Result")) throw badSyntax("PK elements should only contain Result nodes");
                 //no deadKeyTable
-                if (result.getChildren() == null) {
+                if (result.getChildren() == null || result.getChildren().size() == 0) {
                     String txt = null;
                     Key[] with = null;
                     Key reroute = null;
@@ -143,8 +160,34 @@ public class KeyBindings {
                     }
                     KeyInputResult keyInputResult = new KeyInputResult(txt, codepoints, with, vk, null);
                     resultMap.add(keyInputResult);
-                } else { //deadkeytable
-                    //TODO
+                } else {
+                    //deadKeyTable
+                    XMLElement deadKeyTable = result.getChildren().get(0);
+                    if (!deadKeyTable.getTag().equals("DeadKeyTable") || result.getChildren().size() > 1)
+                        throw badSyntax("Result tag should only contain an optional DeadKeyTable");
+                    String dktName = deadKeyTable.getAttributes().getOrDefault("Name", null);
+                    String accent = deadKeyTable.getAttributes().getOrDefault("Accent", null);
+                    Map<String, String> mapping = new HashMap<>();
+                    //resolving deadKeyTable
+                    for (XMLElement res : deadKeyTable.getChildren()) {
+                        if (!res.getTag().equals("Result") || (res.getChildren() != null && res.getChildren().size() > 0) || res.getAttributes().size() < 2)
+                            throw badSyntax("a deadKeyTable result subtag may not have a children -\n" + res);
+                        String text, with;
+                        text = res.getAttributes().get("Text");
+                        with = res.getAttributes().get("With");
+                        mapping.put(with, text);
+                    }
+                    Key[] with = null;
+                    String w = result.getAttributes().getOrDefault("With", null);
+                    if (w != null) {
+                        String[] keys = w.split(" ");
+                        with = new Key[keys.length];
+                        for (int i = 0; i < with.length; i++)
+                            with[i] = Key.valueOf(keys[i]);
+                    }
+                    DeadKeyTable dkt = new DeadKeyTable(dktName, accent, mapping);
+                    KeyInputResult keyInputResult = new KeyInputResult(null, -1, with, null, dkt);
+                    resultMap.add(keyInputResult);
                 }
             }
         }

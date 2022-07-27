@@ -1,10 +1,6 @@
 package input.keyboard;
 
 /**
- * <h1>Azurite</h1>
- * Standard codes: https://kbdlayout.info/kbdusx/scancodes
- *
- * @author Juyas
  * @version 12.07.2021
  * @since 12.07.2021
  */
@@ -98,6 +94,7 @@ public enum Key {
     VK_MEDIA_PLAY_PAUSE,
     VK_MEDIA_PREV_TRACK,
     VK_MEDIA_STOP,
+    VK_MENU,
     VK_MULTIPLY,
     VK_N,
     VK_NEXT,

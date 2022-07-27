@@ -4,12 +4,14 @@ import audio.AudioBuffer;
 import graphics.Shader;
 import graphics.Spritesheet;
 import graphics.Texture;
+import input.keyboard.KeyboardLayout;
 import io.bin.BinaryIO;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * The Assets class contains methods to assist in loading common resources used by the engine from the filesystem as well as HashMaps to keep track of loaded resources.
@@ -21,6 +23,7 @@ public class Assets {
     private static HashMap<String, Texture> textures = new HashMap<>();
     private static HashMap<String, AudioBuffer> audioBuffers = new HashMap<>();
     private static HashMap<String, Spritesheet> spritesheets = new HashMap<>();
+    private static HashMap<String, KeyboardLayout> keyboardLayouts = new HashMap<>();
 
     /**
      * Loads a shader from the filesystem, compiles it, then returns type Shader.
@@ -66,7 +69,7 @@ public class Assets {
     }
 
     /**
-     * Loads a image from the filesystem, and returns a Texture.
+     * Loads an image from the filesystem, and returns a Texture.
      *
      * @param path to Texture resource (usually a .png file)
      * @return returns type Texture
@@ -81,6 +84,24 @@ public class Assets {
         Log.debug("loading texture successfully");
         textures.put(file.getAbsolutePath(), texture);
         return texture;
+    }
+
+    /**
+     * Loads a keyboardLayout from the filesystem, and returns it.
+     *
+     * @param path to a KeyboardLayout file resource (usually a .xml file)
+     * @return returns type KeyboardLayout
+     */
+    public static KeyboardLayout getKeyboardLayout(String path) {
+        File file = new File(path);
+        if (keyboardLayouts.containsKey(file.getAbsolutePath())) {
+            return keyboardLayouts.get(file.getAbsolutePath());
+        }
+        Log.debug("keyboardLayout requested to load: \"" + path + "\"");
+        KeyboardLayout keyboardLayout = KeyboardLayout.parse(Locale.forLanguageTag(file.getName().substring(0, file.getName().length() - 4)), path);
+        Log.debug("loading keyboardLayout successfully");
+        keyboardLayouts.put(file.getAbsolutePath(), keyboardLayout);
+        return keyboardLayout;
     }
 
     public static AudioBuffer getAudioBuffer(String path) {
