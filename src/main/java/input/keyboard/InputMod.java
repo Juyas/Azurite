@@ -8,9 +8,6 @@ import java.util.stream.Collectors;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
- * <h1>Azurite</h1>
- *
- * @author Julius Korweck
  * @version 12.07.2021
  * @since 21.04.2021
  */

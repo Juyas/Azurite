@@ -1,9 +1,6 @@
 package input.keyboard;
 
 /**
- * <h1>Azurite</h1>
- *
- * @author Juyas
  * @version 12.07.2021
  * @since 21.04.2021
  */
