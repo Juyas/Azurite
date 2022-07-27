@@ -84,7 +84,7 @@ public class KeyboardLayout {
             File file = new File(path);
             xmlElement = XML.parse(BinaryIO.readData(file).array());
             if (!xmlElement.getTag().equals("KeyboardLayout")) {
-                throw badSyntax("Keybinding xml has to have a KeyboardLayout tag as root");
+                throw badSyntax("Keybinding xml has to have a KeyboardLayout tag as root -\n" + xmlElement);
             }
             //using the name without extension as the layout descriptor
             bindings.layoutDescriptor = file.getName().substring(0, file.getName().length() - 4);
@@ -98,6 +98,7 @@ public class KeyboardLayout {
             xmlElement = xmlElement.getChildren().get(0);
             //load each element
             for (XMLElement element : xmlElement.getChildren()) {
+                //read PK element
                 KeyInput keyInput = readPK(element);
                 if (keyInput != null) bindings.mapping.put(keyInput.getScancode(), keyInput);
             }
@@ -111,29 +112,17 @@ public class KeyboardLayout {
     private static KeyInput readPK(XMLElement pkElement) {
         if (!pkElement.getTag().equals("PK")) return null;
         if (pkElement.getAttributes().size() < 2) {
-            throw badSyntax("each PK element is supposed to have a least two attributes: VK and SC");
+            throw badSyntax("each PK element is supposed to have a least two attributes: VK and SC -\n" + pkElement);
         }
-        int sc = -1;
-        Key vk = null;
-        String name = null;
-        for (Map.Entry<String, String> x : pkElement.getAttributes().entrySet()) {
-            switch (x.getKey()) {
-                case "VK":
-                    vk = Key.valueOf(x.getValue());
-                    break;
-                case "SC":
-                    sc = Integer.parseInt(x.getValue(), 16);
-                    break;
-                case "Name":
-                    name = x.getValue();
-                    break;
-            }
-        }
+        int sc = Integer.parseInt(pkElement.getAttributes().getOrDefault("SC", "-1"), 16);
+        Key vk = Key.valueOf(pkElement.getAttributes().getOrDefault("VK", null));
+        String name = pkElement.getAttributes().getOrDefault("Name", null);
         List<KeyInputResult> resultMap = new ArrayList<>();
         //empty body allowed for direct bindings
         if (pkElement.getChildren() != null) {
             for (XMLElement result : pkElement.getChildren()) {
-                if (!result.getTag().equals("Result")) throw badSyntax("PK elements should only contain Result nodes");
+                if (!result.getTag().equals("Result"))
+                    throw badSyntax("PK elements should only contain Result nodes -\n" + result);
                 //no deadKeyTable
                 if (result.getChildren() == null || result.getChildren().size() == 0) {
                     String txt = null;
@@ -164,7 +153,7 @@ public class KeyboardLayout {
                     //deadKeyTable
                     XMLElement deadKeyTable = result.getChildren().get(0);
                     if (!deadKeyTable.getTag().equals("DeadKeyTable") || result.getChildren().size() > 1)
-                        throw badSyntax("Result tag should only contain an optional DeadKeyTable");
+                        throw badSyntax("Result tag should only contain an optional DeadKeyTable -\n" + deadKeyTable);
                     String dktName = deadKeyTable.getAttributes().getOrDefault("Name", null);
                     String accent = deadKeyTable.getAttributes().getOrDefault("Accent", null);
                     Map<String, String> mapping = new HashMap<>();
