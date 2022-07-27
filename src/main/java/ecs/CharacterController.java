@@ -1,8 +1,5 @@
 package ecs;
 
-import input.InputState;
-import input.Key;
-import input.Keyboard;
 import org.joml.Vector2f;
 import physics.force.Force;
 
@@ -85,18 +82,22 @@ public class CharacterController extends Component {
     }
 
     private static boolean up() {
-        return Keyboard.is(Key.KEY_UP.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_W.scancode()[0], InputState.PRESSED);
+        //return Keyboard.is(Key.KEY_UP.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_W.scancode()[0], InputState.PRESSED);
+        return false;
     }
 
     private static boolean down() {
-        return Keyboard.is(Key.KEY_DOWN.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_S.scancode()[0], InputState.PRESSED);
+        //return Keyboard.is(Key.KEY_DOWN.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_S.scancode()[0], InputState.PRESSED);
+        return false;
     }
 
     private static boolean left() {
-        return Keyboard.is(Key.KEY_LEFT.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_A.scancode()[0], InputState.PRESSED);
+        //return Keyboard.is(Key.KEY_LEFT.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_A.scancode()[0], InputState.PRESSED);
+        return false;
     }
 
     private static boolean right() {
-        return Keyboard.is(Key.KEY_RIGHT.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_D.scancode()[0], InputState.PRESSED);
+        //return Keyboard.is(Key.KEY_RIGHT.scancode()[0], InputState.PRESSED) || Keyboard.is(Key.KEY_D.scancode()[0], InputState.PRESSED);
+        return false;
     }
 }

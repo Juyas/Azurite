@@ -1,4 +1,4 @@
-package input;
+package input.keyboard;
 
 import event.EventData;
 import event.Events;
@@ -32,7 +32,6 @@ public class Keyboard {
             Log.fatal("Unknown keyboard scancode: " + scancode);
             return;
         }
-        System.out.println(Key.RAW_KEYMAPPING.get(scancode) + " - " + scancode);
         keyStates[scancode] = (byte) (InputMod.option(mods) | InputState.option(action));
     }
 

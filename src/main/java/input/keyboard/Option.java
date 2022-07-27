@@ -1,4 +1,4 @@
-package input;
+package input.keyboard;
 
 /**
  * <h1>Azurite</h1>

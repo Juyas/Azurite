@@ -1,4 +1,4 @@
-package input;
+package input.keyboard;
 
 import java.util.Arrays;
 import java.util.HashMap;
